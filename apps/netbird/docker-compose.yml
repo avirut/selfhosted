@@ -1,0 +1,83 @@
+version: "3"
+services:
+  #UI dashboard
+  netbird-dashboard:
+    image: netbirdio/dashboard:$NETBIRD_DASHBOARD_TAG
+    restart: unless-stopped
+    # ports:
+    #  - 80:80
+    #  - 443:443
+    environment:
+      # Endpoints
+      - NETBIRD_MGMT_API_ENDPOINT=$NETBIRD_MGMT_API_ENDPOINT
+      - NETBIRD_MGMT_GRPC_API_ENDPOINT=$NETBIRD_MGMT_API_ENDPOINT
+      # OIDC
+      - AUTH_AUDIENCE=$NETBIRD_DASH_AUTH_AUDIENCE
+      - AUTH_CLIENT_ID=$NETBIRD_AUTH_CLIENT_ID
+      - AUTH_CLIENT_SECRET=$NETBIRD_AUTH_CLIENT_SECRET
+      - AUTH_AUTHORITY=$NETBIRD_AUTH_AUTHORITY
+      - USE_AUTH0=$NETBIRD_USE_AUTH0
+      - AUTH_SUPPORTED_SCOPES=$NETBIRD_AUTH_SUPPORTED_SCOPES
+      - AUTH_REDIRECT_URI=$NETBIRD_AUTH_REDIRECT_URI
+      - AUTH_SILENT_REDIRECT_URI=$NETBIRD_AUTH_SILENT_REDIRECT_URI
+      - NETBIRD_TOKEN_SOURCE=$NETBIRD_TOKEN_SOURCE
+      # SSL
+      # - NGINX_SSL_PORT=443
+      # Letsencrypt
+      # - LETSENCRYPT_DOMAIN=$NETBIRD_LETSENCRYPT_DOMAIN
+      # - LETSENCRYPT_EMAIL=$NETBIRD_LETSENCRYPT_EMAIL
+    # volumes:
+      # - $LETSENCRYPT_VOLUMENAME:/etc/letsencrypt/
+
+  # Signal
+  netbird-signal:
+    image: netbirdio/signal:$NETBIRD_SIGNAL_TAG
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/netbird/signal:/var/lib/netbird
+  #  ports:
+  #    - $NETBIRD_SIGNAL_PORT:80
+  #      # port and command for Let's Encrypt validation
+  #      - 443:443
+  #    command: ["--letsencrypt-domain", "$NETBIRD_LETSENCRYPT_DOMAIN", "--log-file", "console"]
+
+  # Management
+  netbird-management:
+    image: netbirdio/management:$NETBIRD_MANAGEMENT_TAG
+    restart: unless-stopped
+    depends_on:
+      - netbird-dashboard
+    volumes:
+      - ~/selfhosted/data/netbird/management:/var/lib/netbird
+ #     - $LETSENCRYPT_VOLUMENAME:/etc/letsencrypt:ro
+      - ./management.json:/etc/netbird/management.json
+ #   ports:
+ #     - $NETBIRD_MGMT_API_PORT:443 #API port
+  #    # command for Let's Encrypt validation without dashboard container
+  #    command: ["--letsencrypt-domain", "$NETBIRD_LETSENCRYPT_DOMAIN", "--log-file", "console"]
+    command: [
+      "--port", "443",
+      "--log-file", "console",
+      "--log-level", "info",
+      "--disable-anonymous-metrics=$NETBIRD_DISABLE_ANONYMOUS_METRICS",
+      "--single-account-mode-domain=$NETBIRD_MGMT_SINGLE_ACCOUNT_MODE_DOMAIN",
+      "--dns-domain=$NETBIRD_MGMT_DNS_DOMAIN"
+      ]
+
+  # Coturn
+  coturn:
+    image: coturn/coturn:$COTURN_TAG
+    restart: unless-stopped
+    domainname: $TURN_DOMAIN
+    volumes:
+      - ./turnserver.conf:/etc/turnserver.conf:ro
+    #      - ./privkey.pem:/etc/coturn/private/privkey.pem:ro
+    #      - ./cert.pem:/etc/coturn/certs/cert.pem:ro
+    network_mode: host
+    command:
+      - -c /etc/turnserver.conf
+
+# volumes:
+ #  $MGMT_VOLUMENAME:
+ #  $SIGNAL_VOLUMENAME:
+ #  $LETSENCRYPT_VOLUMENAME:

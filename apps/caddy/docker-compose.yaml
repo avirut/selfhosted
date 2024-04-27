@@ -1,0 +1,28 @@
+---
+version: "3.9"
+
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: caddy:2.7.6
+    container_name: caddy
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # for caddy data and config files
+      - ~/selfhosted/data/caddy/data:/data
+      - ~/selfhosted/data/caddy/config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - swarmnet
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

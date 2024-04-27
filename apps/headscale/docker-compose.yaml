@@ -1,0 +1,30 @@
+---
+version: "3.9"
+
+services:
+  headscale:
+    image: headscale/headscale:0.18.0-beta2
+    container_name: headscale
+    entrypoint: headscale serve
+    restart: unless-stopped
+    labels:
+      caddy: ${DOMAIN}
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+    env_file:
+      - .env
+    volumes:
+      - ./config:/etc/headscale
+      - ~/selfhosted/data/headscale:/var/lib/headscale
+    networks:
+      - cdp # upstreams 8080
+
+  headscale-ui:
+    image: ghcr.io/gurucomputing/headscale-ui:2022.12.23.2-beta
+    container_name: headscale-ui
+    restart: unless-stopped
+    networks:
+      - cdp
+
+networks:
+  cdp:
+    external: true

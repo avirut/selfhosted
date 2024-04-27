@@ -1,0 +1,4 @@
+# jellyfin excludes
+**/jellyfin/transcodes/*
+**/jellyfin/data/metadata/**
+**/jellyfin/metadata/**

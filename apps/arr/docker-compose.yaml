@@ -1,0 +1,125 @@
+---
+version: "3.9"
+
+services:
+  prowlarr:
+    image: ghcr.io/hotio/prowlarr:release-1.2.2.2699
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/selfhosted/data/prowlarr:/config
+    networks:
+      - swarmnet # upstreams 9696
+      - arr
+
+  sonarr:
+    image: ghcr.io/hotio/sonarr:v4-4.0.0.401
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/selfhosted/data/sonarr:/config
+      - /mnt/data:/mnt/data
+    networks:
+      - swarmnet # upstreams 8989
+      - arr
+
+  radarr:
+    image: ghcr.io/hotio/radarr:release-4.3.2.6857
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/selfhosted/data/radarr:/config
+      - /mnt/data:/mnt/data
+    networks:
+      - swarmnet # upstreams 7878
+      - arr
+
+  bazarr:
+    image: ghcr.io/hotio/bazarr:release-1.2.0
+    container_name: bazarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/selfhosted/data/bazarr:/config
+      - /mnt/data/media:/mnt/data/media
+    networks:
+      - swarmnet # upstreams 6767
+      - arr
+
+  rdtclient:
+    image: rogerfar/rdtclient:2.0.25
+    container_name: rdtclient
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - ~/selfhosted/data/rdtclient:/data/db
+      - /mnt/data/torrents:/mnt/data/torrents
+    networks:
+      - swarmnet # upstreams 6500
+      - arr
+
+  ariang:
+    image: hurlenko/aria2-ariang
+    container_name: ariang
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - RPC_SECRET=${ARIA2_RPC_SECRET}
+      - ARIA2RPCPORT=443
+    volumes:
+      # in the ariang web app, must add the RPC_SECRET
+      # and must set download directory to /mnt/data/torrents
+      - ~/selfhosted/data/ariang:/aria2/conf
+      - /mnt/data/torrents:/mnt/data/torrents
+    networks:
+      - swarmnet # upstreams 8080
+      - arr
+
+  doplarr:
+    image: "ghcr.io/kiranshila/doplarr:v3.6.2"
+    container_name: doplarr
+    restart: unless-stopped
+    environment:
+      - SONARR__URL=http://sonarr:8989
+      - RADARR__URL=http://radarr:7878
+      - SONARR__API=${SONARR__API}
+      - RADARR__API=${RADARR__API}
+      - DISCORD__TOKEN=${DISCORD_TOKEN}
+      - SONARR_SEASON_FOLDERS=true
+    networks:
+      - arr
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
+  arr:
+    name: arr

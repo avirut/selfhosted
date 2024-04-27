@@ -1,0 +1,10 @@
+{
+    "groups": {
+        "group:admin": ["avirut"],
+        "group:servers": ["servers"]
+    },
+    "acls": [
+        // allow all communication
+        { "action": "accept", "src": ["group:admin", "group:servers"], "dst": ["group:admin:*", "group:servers:*"] }
+    ]
+}

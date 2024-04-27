@@ -1,0 +1,22 @@
+---
+version: "3.9"
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1.19.3-alpine
+    container_name: uptime-kuma
+    restart: unless-stopped
+    labels:
+      caddy: ${DOMAIN}
+      caddy.reverse_proxy: "{{upstreams 3001}}"
+      caddy.@fa_trigger.path: /dashboard* /settings* /manage* /maintenance*
+      caddy.import: fa_authentik @fa_trigger
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/uptime-kuma:/app/data
+    networks:
+      - cdp # upstreams 3001
+
+networks:
+  cdp:
+    external: true

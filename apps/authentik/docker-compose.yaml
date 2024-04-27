@@ -1,0 +1,75 @@
+---
+version: "3.9"
+
+services:
+  authentik:
+    image: ${AUTHENTIK_IMAGE}:${AUTHENTIK_TAG}
+    container_name: authentik
+    restart: unless-stopped
+    command: server
+    env_file:
+      - .env
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:?database user required}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:?database name required}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
+    labels:
+      caddy: auth.kroac.net
+      caddy.reverse_proxy: "{{upstreams 9000}}"
+    volumes:
+      - ~/selfhosted/data/authentik/media:/media
+      - ~/selfhosted/data/authentik/custom-templates:/templates
+      - ./assets:/media/custom
+    networks:
+      - swarmnet # port 9000
+      - authentik
+
+  worker:
+    image: ${AUTHENTIK_IMAGE}:${AUTHENTIK_TAG}
+    user: root
+    restart: unless-stopped
+    command: worker
+    env_file:
+      - .env
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:?database user required}
+      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:?database name required}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/authentik/media:/media
+      - ~/selfhosted/data/authentik/certs:/certs
+      - ~/selfhosted/data/authentik/custom-templates:/templates
+    networks:
+      - authentik
+
+  postgresql:
+    image: postgres:12-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${PG_PASS:?database password required}
+      - POSTGRES_USER=${PG_USER:?database user required}
+      - POSTGRES_DB=${PG_DB:?database name required}
+    volumes:
+      - ~/selfhosted/data/authentik/database:/var/lib/postgresql/data
+    networks:
+      - authentik
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    networks:
+      - authentik
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
+  authentik:
+    name: authentik

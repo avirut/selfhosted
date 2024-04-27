@@ -1,0 +1,27 @@
+
+---
+version: "3.9"
+
+services:
+  adguardhome:
+    image: adguard/adguardhome:v0.107.48
+    container_name: adguardhome
+    restart: unless-stopped
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 784:784/udp
+      - 853:853/tcp
+      - 13685:13685
+    volumes:
+      - ~/selfhosted/data/adguardhome/work:/opt/adguardhome/work
+      - ~/selfhosted/data/adguardhome/conf:/opt/adguardhome/conf
+      - /mnt/data/media:/media
+    networks:
+      - swarmnet
+
+networks:
+  swarmnet:
+    driver: overlay
+    external: true
+

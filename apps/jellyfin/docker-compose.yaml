@@ -1,0 +1,22 @@
+---
+version: "3.9"
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:10.8.9
+    container_name: jellyfin
+    restart: unless-stopped
+    labels:
+      caddy: ${DOMAIN}
+      caddy.reverse_proxy: "{{upstreams 8096}}"
+    env_file:
+      - .env
+    volumes:
+      - ~/selfhosted/data/jellyfin:/config
+      - /mnt/data/media:/media
+    networks:
+      - cdp # upstreams 8096
+
+networks:
+  cdp:
+    external: true
