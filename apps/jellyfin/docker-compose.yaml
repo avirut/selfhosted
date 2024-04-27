@@ -6,8 +6,6 @@ services:
     image: jellyfin/jellyfin:10.8.9
     container_name: jellyfin
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
       - ~/selfhosted/data/jellyfin:/config
       - /mnt/data/media:/media
