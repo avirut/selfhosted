@@ -18,5 +18,3 @@ networks:
   swarmnet:
     external: true
     driver: overlay
-
-    test
