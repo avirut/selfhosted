@@ -2,6 +2,17 @@
 version: "3.9"
 
 services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    container_name: homarr
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/homarr/configs:/app/data/configs
+      - ~/selfhosted/data/homarr/icons:/app/public/icons
+      - ~/selfhosted/data/homarr/data:/data
+    networks:
+      - swarmnet # upstreams 7575
+
   prowlarr:
     image: ghcr.io/hotio/prowlarr:release-1.2.2.2699
     container_name: prowlarr
