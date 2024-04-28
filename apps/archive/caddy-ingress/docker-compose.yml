@@ -1,0 +1,23 @@
+---
+version: "3.9"
+
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: caddy-ingress:v2.6.2
+    container_name: caddy-ingress
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./caddy-ingress.json:/etc/caddy/caddy-ingress.json
+      - ~/selfhosted/data/caddy-ingress/data:/data
+      - ~/selfhosted/data/caddy-ingress/config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

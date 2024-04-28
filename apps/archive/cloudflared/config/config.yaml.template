@@ -1,0 +1,17 @@
+tunnel: ${TUNNEL_UUID}
+
+ingress:
+  # hostname for SSH, best as tname.domain.tld/ssh
+  - hostname: "${HOST_HOSTNAME}.${DOMAIN}"
+    service: ssh://host.docker.internal:22
+  # hostname for root domain in form domain.tld
+  - hostname: "${DOMAIN}"
+    service: https://caddy:443
+    originRequest:
+      originServerName: "${DOMAIN}"
+  # hostname for everything else in form *.domain.tld
+  - hostname: "*.${DOMAIN}"
+    service: https://caddy:443
+    originRequest:
+      originServerName: "${DOMAIN}"
+  - service: http_status:404

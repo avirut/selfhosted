@@ -1,0 +1,11 @@
+{
+  "host.docker.internal:4567": [
+    "${DOMAIN}",
+    "hs.${DOMAIN}",
+    "auth.${DOMAIN}",
+    "status.${DOMAIN}"
+  ],
+  "100.64.0.3:4567": [
+    "whoami.${DOMAIN}"
+  ]
+}
