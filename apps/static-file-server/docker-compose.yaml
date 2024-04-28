@@ -3,17 +3,15 @@ version: "3.9"
 
 services:
   static-file-server:
-    image: halverneus/static-file-server:v1.8.6
+    image: halverneus/static-file-server:v1.8.10
     container_name: static-file-server
     restart: unless-stopped
-    labels:
-      caddy: ${DOMAIN}
-      caddy.reverse_proxy: "{{upstreams 8080}}"
     volumes:
       - ./site:/web
     networks:
-      - cdp # upstreams 8080
+      - swarmnet # upstreams 8080
 
 networks:
-  cdp:
+  swarmnet:
     external: true
+    driver: overlay
