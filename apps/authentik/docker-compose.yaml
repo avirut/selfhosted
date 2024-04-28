@@ -15,9 +15,6 @@ services:
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:?database user required}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:?database name required}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
-    labels:
-      caddy: auth.kroac.net
-      caddy.reverse_proxy: "{{upstreams 9000}}"
     volumes:
       - ~/selfhosted/data/authentik/media:/media
       - ~/selfhosted/data/authentik/custom-templates:/templates
