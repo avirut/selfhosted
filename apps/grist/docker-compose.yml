@@ -1,0 +1,21 @@
+---
+version: "3.9"
+
+services:
+  caddy:
+    image: gristlabs/grist:1.1.13
+    container_name: grist
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - GRIST_SANDBOX_FLAVOR=gvisor
+      - GRIST_PAGE_TITLE_SUFFIX=_blank
+    volumes:
+      - ~/selfhosted/data/grist:/persist
+    networks:
+      - swarmnet # port 8484
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
