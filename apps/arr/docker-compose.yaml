@@ -3,7 +3,7 @@ version: "3.9"
 
 services:
   homarr:
-    image: ghcr.io/ajnart/homarr:latest
+    image: ghcr.io/ajnart/homarr:0.15.2
     container_name: homarr
     restart: unless-stopped
     volumes:
@@ -14,7 +14,7 @@ services:
       - swarmnet # upstreams 7575
 
   prowlarr:
-    image: ghcr.io/hotio/prowlarr:release-1.2.2.2699
+    image: ghcr.io/hotio/prowlarr:release-1.16.2.4435
     container_name: prowlarr
     restart: unless-stopped
     environment:
@@ -30,7 +30,7 @@ services:
       - swarmnet # upstreams 9696
 
   sonarr:
-    image: ghcr.io/hotio/sonarr:v4-4.0.0.401
+    image: ghcr.io/hotio/sonarr:release-4.0.4.1491
     container_name: sonarr
     restart: unless-stopped
     environment:
@@ -46,7 +46,7 @@ services:
       - swarmnet # upstreams 8989
 
   radarr:
-    image: ghcr.io/hotio/radarr:release-4.3.2.6857
+    image: ghcr.io/hotio/radarr:release-5.4.6.8723
     container_name: radarr
     restart: unless-stopped
     environment:
@@ -62,7 +62,7 @@ services:
       - swarmnet # upstreams 7878
 
   bazarr:
-    image: ghcr.io/hotio/bazarr:release-1.2.0
+    image: ghcr.io/hotio/bazarr:release-1.4.2
     container_name: bazarr
     restart: unless-stopped
     environment:
@@ -78,7 +78,7 @@ services:
       - swarmnet # upstreams 6767
 
   rdtclient:
-    image: rogerfar/rdtclient:2.0.25
+    image: rogerfar/rdtclient:2.0.75
     container_name: rdtclient
     restart: unless-stopped
     environment:
@@ -93,7 +93,7 @@ services:
       - swarmnet # upstreams 6500
 
   ariang:
-    image: hurlenko/aria2-ariang
+    image: hurlenko/aria2-ariang:1.3.7
     container_name: ariang
     restart: unless-stopped
     environment:
@@ -110,7 +110,7 @@ services:
       - swarmnet # upstreams 8080
 
   doplarr:
-    image: "ghcr.io/kiranshila/doplarr:v3.6.2"
+    image: ghcr.io/kiranshila/doplarr:v3.6.3
     container_name: doplarr
     restart: unless-stopped
     environment:
