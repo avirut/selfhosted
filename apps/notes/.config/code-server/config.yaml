@@ -1,0 +1,4 @@
+bind-addr: localhost:8080
+auth: password
+password: b2e6cb243cd2a3a68b5617b9
+cert: false

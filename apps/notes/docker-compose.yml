@@ -1,0 +1,26 @@
+---
+version: "3.9"
+
+services:
+  notes:
+    # build:
+      # context: .
+      # dockerfile: Dockerfile
+    # image: notes-code-server:4.23.1
+    image: codercom/code-server:4.23.1-fedora
+    container_name: notes
+    restart: unless-stopped
+    environment:
+      - DOCKER_USER=$USER
+    volumes:
+      # - ./.config:/root/.config
+      # - ~/selfhosted/data/notes:/root/.local/share/code-server
+      - ./.config:/home/coder/.config
+      - ~/selfhosted/data/notes:/home/coder/project
+    networks:
+      - swarmnet # port 8080
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
