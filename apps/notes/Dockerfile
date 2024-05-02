@@ -1,42 +1,43 @@
-# ARG BASE_VERSION=4.23.1
+# adapted from https://github.com/MaastrichtU-IDS/code-server/blob/main/Dockerfile
 
-# FROM codercom/code-server:${BASE_VERSION}-debian AS base
+FROM codercom/code-server:4.23.1-debian
 
-# install miniforge
-# RUN wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-# RUN bash Miniforge3.sh -b -p "${HOME}/conda"
+USER root
 
-# RUN sudo chsh -s /bin/bash $(whoami)
-# RUN "source \"${HOME}/conda/etc/profile.d/conda.sh\""
-# RUN source "${HOME}/conda/etc/profile.d/mamba.sh"
-# RUN conda activate
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y curl
 
-# RUN . ${HOME}/conda/etc/profile.d/conda.sh
-# RUN . ${HOME}/conda/etc/profile.d/mamba.sh
-# RUN mamba activate
+RUN chown -R 1000:1000 /opt
+USER 1000
 
-# RUN ["/bin/bash", "-c", "source \"${HOME}/conda/etc/profile.d/conda.sh\""]
-# RUN ["/bin/bash", "-c", "source \"${HOME}/conda/etc/profile.d/mamba.sh\""]
-# RUN ["/bin/bash", "-c", "conda activate"]
+ENV CONDA_DIR=/opt/conda \
+    SHELL=/bin/bash \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 
+ENV PATH="${CONDA_DIR}/bin:${PATH}"
 
-FROM condaforge/miniforge3:24.3.0-0
+RUN export download_url=$(curl -s https://api.github.com/repos/conda-forge/miniforge/releases/latest | grep browser_download_url | grep -P "Mambaforge-\d+((\.|-)\d+)*-Linux-x86_64.sh" | grep -v sha256 | cut -d '"' -f 4) && \
+    echo "Downloading latest miniforge from $download_url" && \
+    curl -Lf -o miniforge.sh $download_url && \
+    /bin/bash "miniforge.sh" -f -b -p "${CONDA_DIR}" && \
+    rm "miniforge.sh" && \
+    conda config --system --set auto_update_conda false && \
+    conda config --system --set show_channel_urls true
 
-ENV VERSION 4.23.1
+RUN code-server --install-extension ms-python.python \
+            --install-extension foam.foam-vscode \
+            --install-extension quarto.quarto \
+            --install-extension qwtel.sqlite-viewer \
+            --install-extension monokai.theme-monokai-pro-vscode
 
-RUN ["/bin/bash", "-c", "apt-get -y update; apt-get -y install curl"]
+RUN mkdir -p /home/coder/project
 
-# RUN mkdir -p ~/.local/lib ~/.local/bin
-# RUN curl -fL https://github.com/coder/code-server/releases/download/v$VERSION/code-server-$VERSION-linux-amd64.tar.gz | tar -C ~/.local/lib -xz
-# RUN mv ~/.local/lib/code-server-$VERSION-linux-amd64 ~/.local/lib/code-server-$VERSION
-# RUN ln -s ~/.local/lib/code-server-$VERSION/bin/code-server ~/.local/bin/code-server
-# ENTRYPOINT ["/root/.local/bin/code-server"]
+COPY --chown=1000 settings.json /home/coder/.local/share/code-server/User/settings.json
 
-RUN export VERSION=4.23.1 \
- && curl -fsSL https://code-server.dev/install.sh | sh \
- && rm -rf "${HOME}/.cache"
+# Fix permission issues when editing settings.json?
+# RUN chmod 777 /home/coder/.local/share/code-server/User/settings.json
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
-
-# RUN ["/bin/bash", "-c", "curl -fOL https://github.com/coder/code-server/releases/download/v${VERSION}/code-server_${VERSION}_amd64.deb"]
-# RUN ["/bin/bash", "-c", "dpkg -i code-server_${VERSION}_amd64.deb"]
-# RUN ["/bin/bash", "-c", "systemctl enable --now code-server@$USER"]
+RUN mamba init
+RUN sudo echo "export PATH=/opt/conda/bin:\${PATH}" >> ~/.bashrc
+RUN sudo echo "mamba activate" >> ~/.bashrc
+WORKDIR /home/coder/project
