@@ -14,7 +14,10 @@ services:
       - DOCKER_USER=$USER
     volumes:
       - ./.config:/home/coder/.config
-      - ~/selfhosted/data/notes:/home/coder/project
+      - ~/selfhosted/data/notes/project:/home/coder/project
+      - local:/home/coder/.local/share/code-server
+      - conda_envs:/opt/conda/envs
+      - conda_pkgs:/opt/conda/pkgs
     networks:
       - swarmnet # port 8080
 
@@ -22,3 +25,8 @@ networks:
   swarmnet:
     external: true
     driver: overlay
+
+volumes:
+  conda_envs:
+  conda_pkgs:
+  local:
