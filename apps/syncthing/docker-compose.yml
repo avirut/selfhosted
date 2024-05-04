@@ -1,0 +1,22 @@
+---
+version: "3.9"
+
+services:
+  syncthing:
+    image: syncthing/syncthing:1.27.6
+    container_name: syncthing
+    hostname: syncthing
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /mnt/syncthing:/var/syncthing
+    networks:
+      - swarmnet # port 8384
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
