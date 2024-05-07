@@ -27,7 +27,11 @@ COMPRESS_CACHE_BACKEND = 'locmem'
 TIME_ZONE = 'America/Chicago'
 FILE_SERVER_ROOT = "https://subdomain.example.com/seafhttp"
 
-CSRF_TRUSTED_ORIGINS=["https://subdomain.example.com"]
+###
+# Additions start here
+###
+
+CSRF_TRUSTED_ORIGINS = ["https://subdomain.example.com"]
 
 ENABLE_OAUTH = True
 

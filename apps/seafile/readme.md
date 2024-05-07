@@ -41,6 +41,7 @@ Here are the steps needed to achieve each:
 
 ##### 4. Mount files to local filesystem
 - Original plan here was to use Seafile's built in FUSE extension which enables mounting files to the local filesystem; unfortunately, this is read only, so not viable for my use case of having other apps point to the same directory
-- Correspondingly, it seems like the best answer would be to just run a seafile client on the same server - this means duplicating data on the same disk, but is unavoidable (unless I want to switch to Nextcloud, which I don't)
+- Correspondingly, it seems like the best answer would be to just run a seafile sync client on the same server - this means duplicating data on the same disk, but is unavoidable (unless I want to switch to Nextcloud, which I don't)
 
 ##### 5. Recovery & backups
+- For now, the hope is that the regular restic backup of `~/selfhosted/data/seafile/store` (which contains underlying blocks), in combination with having the actual files synced to my PC, will be sufficient

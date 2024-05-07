@@ -4,7 +4,7 @@ services:
     container_name: seafile
     restart: unless-stopped
     volumes:
-      - seafile-data:/shared   # Requested, specifies the path to Seafile data persistent store.
+      - ~/selfhosted/data/seafile/store:/shared # Requested, specifies the path to Seafile data persistent store.
     env_file:
       - .env
     environment:
