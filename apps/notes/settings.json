@@ -2,5 +2,15 @@
     "workbench.colorTheme": "Monokai Pro",
     "python.dataScience.alwaysTrustNotebooks": true,
     "terminal.integrated.inheritEnv": true,
-    "git.autofetch": false
+    "git.autofetch": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.crswap": true,
+        "**/.stfolder": true
+    }
 }

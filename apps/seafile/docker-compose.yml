@@ -1,0 +1,85 @@
+services:
+  seafile:
+    image: docker.seadrive.org/seafileltd/seafile-pro-mc:11.0-latest
+    container_name: seafile
+    restart: unless-stopped
+    volumes:
+      - seafile-data:/shared   # Requested, specifies the path to Seafile data persistent store.
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - TIME_ZONE=America/Chicago  # Optional, default is UTC. Should be uncomment and set to your local time zone.
+      - SEAFILE_SERVER_LETSENCRYPT=false   # Whether to use https or not.
+      - FORCE_HTTPS_IN_CONF=true # If you want a reverse proxy with its own ssl cert then enable this and SEAFILE_SERVER_LETSENCRYPT
+    depends_on:
+      - db
+      - memcached
+      - elasticsearch
+    networks:
+      - seafile-net
+      - swarmnet # port 80
+
+  db:
+    image: mariadb:10.11
+    container_name: seafile-mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MYSQL_LOG_CONSOLE=true
+      - MARIADB_AUTO_UPGRADE=1
+    volumes:
+      - ~/selfhosted/data/seafile/db:/var/lib/mysql  # Requested, specifies the path to MySQL data persistent store.
+    networks:
+      - seafile-net
+
+  memcached:
+    image: memcached:1.6.18
+    container_name: seafile-memcached
+    restart: unless-stopped
+    entrypoint: memcached -m 256
+    networks:
+      - seafile-net
+
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: seafile-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "xpack.security.enabled=false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 4g
+    volumes:
+      - ~/selfhosted/data/seafile/elasticsearch:/usr/share/elasticsearch/data  # Requested, specifies the path to Elasticsearch data persistent store.
+    networks:
+      - seafile-net
+
+  oods:
+    image: onlyoffice/documentserver:8.0.1.1
+    container_name: seafile-oods
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - JWT_ENABLED=true
+    # TODO: Figure out appropriate bind mount to persist OODS autosave config
+    # volumes:
+      # - ~/selfhosted/data/seafile/oods/local.json:/etc/onlyoffice/documentserver/local.json
+    networks:
+      - seafile-net
+      - swarmnet
+
+networks:
+  seafile-net:
+  swarmnet:
+    external: true
+    driver: overlay
+
+volumes:
+  seafile-data:
