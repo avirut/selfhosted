@@ -45,3 +45,5 @@ Here are the steps needed to achieve each:
 
 ##### 5. Recovery & backups
 - For now, the hope is that the regular restic backup of `~/selfhosted/data/seafile/store` (which contains underlying blocks), in combination with having the actual files synced to my PC, will be sufficient
+- Use the [instructions on the docs](https://help.seafile.com/syncing_client/linux-cli/) to set up `seaf-cli`
+    - Where the instructions say to input the username in the `sync` command, use the e-mail address rather than just the username

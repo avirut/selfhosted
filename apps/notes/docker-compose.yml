@@ -14,7 +14,7 @@ services:
       - DOCKER_USER=$USER
     volumes:
       - ./.config:/home/coder/.config
-      - /mnt/syncthing/hqt:/home/coder/project
+      - /mnt/drive:/home/coder/project
       - local:/home/coder/.local/share/code-server
       - conda_envs:/opt/conda/envs
       - conda_pkgs:/opt/conda/pkgs
