@@ -6,3 +6,4 @@ apps/static-file-server/site*
 apps/authentik/assets*
 apps/caddy-ingress/hostmap.json
 Caddyfile
+todo.md
