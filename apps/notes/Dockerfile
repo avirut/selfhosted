@@ -4,7 +4,7 @@ FROM codercom/code-server:4.23.1-debian
 
 # preparation
 USER root
-RUN apt-get update -y && apt-get upgrade -y && apt-get install -y curl
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y curl ffmpeg libsm6 libxext6 libgl1-mesa-dev
 RUN chown -R 1000:1000 /opt
 USER 1000
 
