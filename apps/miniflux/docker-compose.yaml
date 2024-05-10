@@ -1,21 +1,23 @@
 services:
   miniflux:
-    image: ghcr.io/miniflux/miniflux:2.0.44-distroless
+    image: miniflux/miniflux:2.1.3-distroless
     container_name: miniflux
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://miniflux:${POSTGRES_PASSWORD}@miniflux-db/miniflux?sslmode=disable
+      - DATABASE_URL=postgres://miniflux:${POSTGRES_PASSWORD}@db/miniflux?sslmode=disable
       - RUN_MIGRATIONS=1
       - CREATE_ADMIN=1
+      - OAUTH2_PROVIDER=oidc
+      - OAUTH2_USER_CREATION=1
     networks:
       - swarmnet # port 8080
     depends_on:
-      miniflux-db:
+      db:
         condition: service_healthy
 
-  miniflux-db:
+  db:
     image: postgres:15
     container_name: miniflux-db
     restart: unless-stopped
@@ -23,6 +25,7 @@ services:
       - .env
     environment:
       - POSTGRES_USER=miniflux
+      - POSTGRES_DB=miniflux
     volumes:
       - ~/selfhosted/data/miniflux:/var/lib/postgresql/data
     networks:
