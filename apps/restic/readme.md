@@ -29,13 +29,13 @@ sudo crontab -e
 ```
 
 Use [crontab.guru](https://crontab.guru/) to generate the cron schedule. For example, to run the backup at 4:45 AM every day, use:
-```
-45 4 * * * cd /home/avirut/selfhosted/apps/restic && ./backup.sh > /home/avirut/selfhosted/data/restic/backup.log 2>&1
+```bash
+45 4 * * * cd /home/avirut/selfhosted/apps/restic && ./backup.sh <ENV_FILE> > /home/avirut/selfhosted/data/restic/backup.log 2>&1
 ```
 
 On a single host only (likely the VPS), run the `remove-old.sh` script at a time when no other backups are running. For example, to run the script at 5:00 PM every day, use:
 ```bash
-0 17 * * * cd /home/avirut/selfhosted/apps/restic && ./remove-old.sh > /home/avirut/selfhosted/data/restic/remove-old.log 2>&1
+0 17 * * * cd /home/avirut/selfhosted/apps/restic && ./remove-old.sh <ENV_FILE> > /home/avirut/selfhosted/data/restic/remove-old.log 2>&1
 ```
 
 In order to get logs, make a restic folder in the datadir:
@@ -48,10 +48,10 @@ sudo mkdir -p ~/selfhosted/data/restic
 Simply installs restic to /usr/local/bin/restic.
 
 ### create-repo.sh
-Creates a restic repository to backblaze based on the values in `.env`.
+Creates a restic repository to backblaze based on the values in provided env file.
 
 ### backup.sh
-Backs up the specified directory from `.env` to the restic repository.
+Backs up the directory specified in provided environment file to the restic repository.
 
 ### remove-old.sh
 Removes old backups from the restic repository. This should only be run on one host, and at a time when no other backups are running. E.g. for backups in the early AM, this can be run in the afternoon.

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# import environment variables from file .env
+# import environment variables from file provided as argument
 set -o allexport
-source .env
+source $1
 set +o allexport
 
 # create a new repository
-restic -r b2:${B2_BUCKET_NAME} init
+restic -r s3:${S3_ENDPOINT} init
