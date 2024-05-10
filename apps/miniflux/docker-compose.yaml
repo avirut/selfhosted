@@ -1,14 +1,8 @@
----
-version: "3"
-
 services:
   miniflux:
     image: ghcr.io/miniflux/miniflux:2.0.44-distroless
     container_name: miniflux
     restart: unless-stopped
-    labels:
-      caddy: ${DOMAIN}
-      caddy.reverse_proxy: "{{upstreams 8080}}"
     env_file:
       - .env
     environment:
@@ -16,7 +10,7 @@ services:
       - RUN_MIGRATIONS=1
       - CREATE_ADMIN=1
     networks:
-      - cdp # upstreams 8080
+      - swarmnet # port 8080
     depends_on:
       miniflux-db:
         condition: service_healthy
@@ -32,12 +26,13 @@ services:
     volumes:
       - ~/selfhosted/data/miniflux:/var/lib/postgresql/data
     networks:
-      - cdp
+      - swarmnet
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "miniflux"]
       interval: 10s
       start_period: 30s
 
 networks:
-  cdp:
+  swarmnet:
     external: true
+    driver: overlay
