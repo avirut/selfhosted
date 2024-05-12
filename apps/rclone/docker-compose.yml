@@ -12,7 +12,7 @@ services:
       - PGID=1000
     volumes:
       - ./config:/config/rclone
-      - ./sync_files.sh:/etc/periodic/15min/sync_files.sh # this will be run by cron
+      - ./sync_files:/etc/periodic/15min/sync_files # this will be run by cron
       - /mnt/drive:/data:ro
     networks:
       - swarmnet
