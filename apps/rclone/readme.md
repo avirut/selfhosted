@@ -6,5 +6,3 @@
 3. Add htpasswd file to ./config
     - `touch .htpasswd`
     - `htpasswd -B .htpasswd <USER>`
-4. Add sync command to crontab
-    - 
