@@ -1,0 +1,22 @@
+services:
+  rclone:
+    image: rclone/rclone:1.66
+    container_name: rclone
+    command: rcd --rc-web-gui --rc-addr :5572 --rc-htpasswd /config/rclone/.htpasswd
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PHP_TZ=America/Chicago
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./config:/config/rclone
+      - /mnt/drive:/data:ro
+    networks:
+      - swarmnet
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

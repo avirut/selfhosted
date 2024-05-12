@@ -7,3 +7,5 @@ apps/authentik/assets*
 apps/caddy-ingress/hostmap.json
 Caddyfile
 todo.md
+*.htpasswd
+apps/rclone/config/rclone.conf
