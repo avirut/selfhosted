@@ -6,13 +6,14 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://miniflux:${POSTGRES_PASSWORD}@db/miniflux?sslmode=disable
+      - DATABASE_URL=postgres://miniflux:${POSTGRES_PASSWORD}@miniflux-db/miniflux?sslmode=disable
       - RUN_MIGRATIONS=1
       - CREATE_ADMIN=1
       - OAUTH2_PROVIDER=oidc
       - OAUTH2_USER_CREATION=1
     networks:
       - swarmnet # port 8080
+      - miniflux-net
     depends_on:
       db:
         condition: service_healthy
@@ -29,13 +30,14 @@ services:
     volumes:
       - ~/selfhosted/data/miniflux:/var/lib/postgresql/data
     networks:
-      - swarmnet
+      - miniflux-net
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "miniflux"]
       interval: 10s
       start_period: 30s
 
 networks:
+  miniflux-net:
   swarmnet:
     external: true
     driver: overlay
