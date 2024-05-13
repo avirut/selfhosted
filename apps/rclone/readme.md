@@ -6,3 +6,6 @@
 3. Add htpasswd file to ./config
     - `touch .htpasswd`
     - `htpasswd -B .htpasswd <USER>`
+4. Add `sync.sh` to crontab on user system - this doesn't seem to work within the docker container, although that would be ideal
+    - `sudo crontab -e` to add to superuser crontab
+    - add line `*/15 * * * * cd ~/selfhosted/apps/rclone && ./sync.sh` to sync every 15 minutes
