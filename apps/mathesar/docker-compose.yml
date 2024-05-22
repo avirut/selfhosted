@@ -1,0 +1,56 @@
+services:
+  mathesar:
+    container_name: mathesar
+    image: mathesar/mathesar-prod:0.1.7
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment: 
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      ALLOWED_HOSTS: "*"
+      POSTGRES_HOST: mathesar_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mathesar_django
+      POSTGRES_USER: mathesar
+    volumes:
+      - ~/selfhosted/data/mathesar/static:/code/static
+      - ~/selfhosted/data/mathesar/media:/code/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8000
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+    networks:
+      - swarmnet
+      - mathesar-net
+
+  db:
+    image: postgres:16
+    container_name: mathesar_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: mathesar_django
+      POSTGRES_USER: mathesar
+    volumes:
+      - ~/selfhosted/data/mathesar/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 1s
+      retries: 30
+      start_period: 5s
+    networks:
+      - swarmnet
+      - mathesar-net
+
+networks:
+  mathesar-net:
+  swarmnet:
+    external: true
+    driver: overlay
