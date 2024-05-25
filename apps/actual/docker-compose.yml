@@ -1,0 +1,14 @@
+services:
+  actual:
+    image: actualbudget/actual-server:edge
+    container_name: actual
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/actual:/data
+    networks:
+      - swarmnet # port 5006
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
