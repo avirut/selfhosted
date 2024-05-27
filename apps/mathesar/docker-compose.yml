@@ -16,7 +16,7 @@ services:
       - ~/selfhosted/data/mathesar/static:/code/static
       - ~/selfhosted/data/mathesar/media:/code/media
     depends_on:
-      db:
+      mathesar_db:
         condition: service_healthy
     healthcheck:
       test: curl -f http://localhost:8000
@@ -28,7 +28,7 @@ services:
       - swarmnet
       - mathesar-net
 
-  db:
+  mathesar_db:
     image: postgres:16
     container_name: mathesar_db
     restart: unless-stopped
@@ -46,7 +46,6 @@ services:
       retries: 30
       start_period: 5s
     networks:
-      - swarmnet
       - mathesar-net
 
 networks:
