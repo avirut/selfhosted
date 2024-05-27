@@ -1,0 +1,19 @@
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:0.24.6-ultra-lite
+    container_name: stirling-pdf
+    restart: unless-stopped
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      - LANGS=en_US
+    volumes:
+      - ~/selfhosted/data/stirlingpdf/trainingData:/usr/share/tessdata
+      - ~/selfhosted/data/stirlingpdf/extraConfigs:/configs
+    networks:
+      - swarmnet # port 8080
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
