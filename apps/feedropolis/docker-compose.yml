@@ -1,0 +1,29 @@
+services:
+
+  feedropolis:
+    image: stormworks/feedropolis
+    container_name: feedropolis
+    privileged: true
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@feedropolis-db:5432/feedropolis
+      - DEBUG=
+    networks:
+      - swarmnet # port 3000
+      - feedropolis-net
+
+  feedropolis-db:
+    image: docker.io/library/postgres:12
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=feedropolis
+    networks:
+      - feedropolis-net
+
+networks:
+  feedropolis-net:
+  swarmnet:
+    external: true
+    driver: overlay
