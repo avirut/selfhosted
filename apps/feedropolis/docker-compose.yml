@@ -19,6 +19,8 @@ services:
       - .env
     environment:
       - POSTGRES_DB=feedropolis
+    volumes:
+      - ~/selfhosted/data/feedropolis/db:/var/lib/postgresql/data
     networks:
       - feedropolis-net
 
