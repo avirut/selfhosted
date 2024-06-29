@@ -1,6 +1,6 @@
 # adapted from https://github.com/MaastrichtU-IDS/code-server/blob/main/Dockerfile
 
-FROM codercom/code-server:4.23.1-debian
+FROM codercom/code-server:4.90.3-debian
 
 # preparation
 USER root

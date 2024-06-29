@@ -1,6 +1,6 @@
 services:
   jellyfin:
-    image: jellyfin/jellyfin:10.9.0
+    image: jellyfin/jellyfin:10.9.7
     container_name: jellyfin
     restart: unless-stopped
     volumes:

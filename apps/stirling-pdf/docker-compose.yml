@@ -1,6 +1,6 @@
 services:
   stirling-pdf:
-    image: frooodle/s-pdf:0.24.6-ultra-lite
+    image: frooodle/s-pdf:0.26.1-ultra-lite
     container_name: stirling-pdf
     restart: unless-stopped
     environment:

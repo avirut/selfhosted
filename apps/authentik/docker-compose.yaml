@@ -1,9 +1,6 @@
----
-version: "3.9"
-
 services:
   authentik:
-    image: ${AUTHENTIK_IMAGE}:${AUTHENTIK_TAG}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
     container_name: authentik
     restart: unless-stopped
     command: server
@@ -24,7 +21,7 @@ services:
       - authentik
 
   worker:
-    image: ${AUTHENTIK_IMAGE}:${AUTHENTIK_TAG}
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
     user: root
     restart: unless-stopped
     command: worker

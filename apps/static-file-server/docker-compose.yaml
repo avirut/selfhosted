@@ -3,7 +3,7 @@ version: "3.9"
 
 services:
   static-file-server:
-    image: halverneus/static-file-server:v1.8.10
+    image: halverneus/static-file-server:v1.8.11
     container_name: static-file-server
     restart: unless-stopped
     volumes:

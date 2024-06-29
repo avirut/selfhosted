@@ -1,12 +1,9 @@
----
-version: "3.9"
-
 services:
   notes:
     build:
       context: .
       dockerfile: Dockerfile
-    image: notes-code-server:4.23.1
+    image: notes-code-server:4.90.3
     container_name: notes
     hostname: notes
     restart: unless-stopped
