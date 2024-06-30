@@ -15,10 +15,10 @@ services:
       - swarmnet # port 8080
       - miniflux-net
     depends_on:
-      db:
+      miniflux-db:
         condition: service_healthy
 
-  db:
+  miniflux-db:
     image: postgres:15
     container_name: miniflux-db
     restart: unless-stopped
