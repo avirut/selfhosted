@@ -3,6 +3,7 @@ services:
   feedropolis:
     image: stormworks/feedropolis
     container_name: feedropolis
+    restart: unless-stopped
     privileged: true
     env_file:
       - .env
@@ -15,6 +16,8 @@ services:
 
   feedropolis-db:
     image: docker.io/library/postgres:12
+    container_name: feedropolis-db
+    restart: unless-stopped
     env_file:
       - .env
     environment:
