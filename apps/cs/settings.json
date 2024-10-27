@@ -1,0 +1,7 @@
+{
+    "workbench.colorTheme": "Monokai Pro",
+    "python.dataScience.alwaysTrustNotebooks": true,
+    "terminal.integrated.inheritEnv": true,
+    "git.autofetch": false,
+    "remote.autoForwardPortsSource": "hybrid"
+}

@@ -1,0 +1,29 @@
+services:
+  cs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mamba-code-server:4.93.1
+    container_name: cs
+    hostname: cs
+    restart: unless-stopped
+    environment:
+      - DOCKER_USER=$USER
+    volumes:
+      - ./.config:/home/coder/.config
+      - ~/pocopo:/home/coder/project
+      - local:/home/coder/.local/share/code-server
+      - conda_envs:/opt/conda/envs
+      - conda_pkgs:/opt/conda/pkgs
+    networks:
+      - swarmnet # port 8080
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
+
+volumes:
+  conda_envs:
+  conda_pkgs:
+  local:
