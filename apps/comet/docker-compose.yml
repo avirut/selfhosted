@@ -1,0 +1,16 @@
+services:
+  comet:
+    container_name: comet
+    image: g0ldyy/comet:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ~/selfhosted/data/comet:/data
+    networks:
+      - swarmnet # upstreams 8000
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
