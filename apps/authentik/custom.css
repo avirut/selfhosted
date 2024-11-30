@@ -1,0 +1,8 @@
+.pf-c-page__drawer {
+    background-color: black !important;
+}
+
+.pf-c-login__footer {
+    visibility: hidden !important;
+    max-height: 0vh !important;
+}

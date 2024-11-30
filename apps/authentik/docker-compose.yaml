@@ -15,7 +15,7 @@ services:
     volumes:
       - ~/selfhosted/data/authentik/media:/media
       - ~/selfhosted/data/authentik/custom-templates:/templates
-      - ./assets:/media/custom
+      - ./custom.css:/web/dist/custom.css
     networks:
       - swarmnet # port 9000
       - authentik
