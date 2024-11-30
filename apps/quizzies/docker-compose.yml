@@ -1,0 +1,14 @@
+services:
+  quizzies:
+    image: ghcr.io/avirut/quizzies:master
+    container_name: quizzies
+    restart: unless-stopped
+    volumes:
+      - ./quizzies.db:/app/src/lib/server/db/quizzies.db
+    networks:
+      - swarmnet # upstreams 3000
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

@@ -9,3 +9,4 @@ Caddyfile
 todo.md
 *.htpasswd
 apps/rclone/config/rclone.conf
+apps/quizzies/quizzies.db
