@@ -1,0 +1,15 @@
+services:
+  big-agi:
+    image: ghcr.io/enricoros/big-agi:latest
+    container_name: big-agi
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: [ "next", "start", "-p", "3000" ]
+    networks:
+      - swarmnet # upstreams 3000
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
