@@ -26,6 +26,26 @@ services:
     networks:
       - swarmnet # upstreams 9696
 
+  autobrr:
+    image: ghcr.io/autobrr/autobrr:latest
+    container_name: autobrr
+    restart: unless-stopped
+    environment:
+      - TZ='America/Chicago'
+    volumes:
+      - ~/selfhosted/data/autobrr:/config
+    networks:
+      - swarmnet # upstreams 7474
+
+  omegabrr:
+    image: ghcr.io/autobrr/omegabrr:latest
+    container_name: omegabrr
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/omegabrr:/config # to be manually edited in data folder for config
+    networks:
+      - swarmnet # available on 7441
+
   sonarr:
     image: ghcr.io/hotio/sonarr:release
     container_name: sonarr
