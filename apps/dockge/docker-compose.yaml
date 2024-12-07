@@ -1,0 +1,19 @@
+services:
+  dockge:
+    image: louislam/dockge:1.4.2
+    container_name: dockge
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/dockge:/app/data
+      # relative paths aren't allowed here, apparently
+      - /home/avirut/selfhosted/apps:/home/avirut/selfhosted/apps
+    environment:
+      - DOCKGE_STACKS_DIR=/home/avirut/selfhosted/apps
+    networks:
+      - swarmnet # upstreams 5001
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
