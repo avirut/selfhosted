@@ -1,0 +1,18 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - GENERIC_TIMEZONE=America/Chicago
+    volumes:
+      - ~/selfhosted/data/n8n:/home/node/.n8n
+    networks:
+      - swarmnet # upstreams 5678
+
+networks:
+  swarmnet:
+    external: true

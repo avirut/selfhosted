@@ -1,0 +1,106 @@
+services:
+  windmill-server:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: windmill-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@windmill-db/windmill?sslmode=disable
+      - MODE=server
+    volumes:
+      - ~/selfhosted/data/windmill/logs:/tmp/windmill/logs
+    networks:
+      - windmillnet
+      - swarmnet
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+
+  windmill-db:
+    image: postgres:16
+    container_name: windmill-db
+    restart: unless-stopped
+    shm_size: 1g
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: windmill
+    volumes:
+      - ~/selfhosted/data/windmill/data:/var/lib/postgresql/data
+    networks:
+      - windmillnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  windmill-worker:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: windmill-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@windmill-db/windmill?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/windmill/worker_dependency_cache:/tmp/windmill/cache
+      - ~/selfhosted/data/worker_logs:/tmp/windmill/logs
+    networks:
+      - windmillnet
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+
+  windmill-worker-native:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: windmill-worker-native
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@windmill-db/windmill?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=native
+      - NUM_WORKERS=8
+      - SLEEP_QUEUE=200
+    volumes:
+      - ~/selfhosted/data/windmill/worker_logs:/tmp/windmill/logs
+    networks:
+      - windmillnet
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+
+  windmill-worker-reports:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: windmill-worker-reports
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@windmill-db/windmill?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=reports
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/windmill/worker_dependency_cache:/tmp/windmill/cache
+      - ~/selfhosted/data/windmill/worker_logs:/tmp/windmill/logs
+    networks:
+      - windmillnet
+    depends_on:
+      windmill-db:
+        condition: service_healthy
+
+  windmill-lsp:
+    image: ghcr.io/windmill-labs/windmill-lsp:latest
+    container_name: windmill-lsp
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/windmill/lsp_cache:/root/.cache
+    networks:
+      - windmillnet
+
+networks:
+  swarmnet:
+    external: true
+  windmillnet:
