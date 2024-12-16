@@ -1,0 +1,20 @@
+services:
+  komodo-periphery-2:
+    image: ghcr.io/mbecker20/periphery:latest
+    container_name: komodo-periphery-2
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/procs
+      - ~/selfhosted/apps:/host/compose
+    networks:
+      - swarmnet
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
+  komodonet:
