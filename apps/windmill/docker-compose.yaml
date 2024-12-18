@@ -51,6 +51,7 @@ services:
       - ~/selfhosted/data/worker_logs:/tmp/windmill/logs
     networks:
       - windmillnet
+      - swarmnet
     depends_on:
       windmill-db:
         condition: service_healthy
@@ -69,6 +70,7 @@ services:
       - ~/selfhosted/data/windmill/worker_logs:/tmp/windmill/logs
     networks:
       - windmillnet
+      - swarmnet
     depends_on:
       windmill-db:
         condition: service_healthy
@@ -87,6 +89,7 @@ services:
       - ~/selfhosted/data/windmill/worker_logs:/tmp/windmill/logs
     networks:
       - windmillnet
+      - swarmnet
     depends_on:
       windmill-db:
         condition: service_healthy

@@ -15,6 +15,9 @@ services:
     volumes:
       - ~/selfhosted/data/mathesar/static:/code/static
       - ~/selfhosted/data/mathesar/media:/code/media
+    networks:
+      - swarmnet # upstreams 8000
+      - mathesar-net
     depends_on:
       mathesar_db:
         condition: service_healthy
@@ -24,9 +27,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 5s
-    networks:
-      - swarmnet
-      - mathesar-net
 
   mathesar_db:
     image: postgres:16
