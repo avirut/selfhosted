@@ -1,0 +1,25 @@
+services:
+  matrix:
+    image: girlbossceo/conduwuit:latest
+    container_name: matrix
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      CONDUWUIT_DATABASE_PATH: /var/lib/conduwuit
+      CONDUWUIT_PORT: 6167
+      CONDUWUIT_MAX_REQUEST_SIZE: 20000000 # in bytes, ~20 MB
+      CONDUWUIT_ALLOW_REGISTRATION: 'true'
+      CONDUWUIT_ALLOW_FEDERATION: 'true'
+      CONDUWUIT_ALLOW_CHECK_FOR_UPDATES: 'true'
+      CONDUWUIT_TRUSTED_SERVERS: '["matrix.org", "puppygock.gay"]'
+      CONDUWUIT_ADDRESS: 0.0.0.0
+    volumes:
+      - ~/selfhosted/data/matrix/db:/var/lib/conduwuit
+    networks:
+      - swarmnet # upstreams 6167
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
