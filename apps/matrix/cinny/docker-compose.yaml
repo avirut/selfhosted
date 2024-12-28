@@ -1,0 +1,12 @@
+services:
+  cinny:
+    image: ghcr.io/cinnyapp/cinny:latest
+    container_name: cinny
+    restart: unless-stopped
+    networks:
+      - swarmnet # upstreams 80
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

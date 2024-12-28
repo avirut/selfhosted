@@ -1,7 +1,7 @@
 services:
-  matrix:
+  conduwuit:
     image: girlbossceo/conduwuit:latest
-    container_name: matrix
+    container_name: conduwuit
     restart: unless-stopped
     env_file:
       - .env

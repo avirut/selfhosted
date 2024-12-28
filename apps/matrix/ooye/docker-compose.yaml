@@ -1,0 +1,21 @@
+services:
+  ooye:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ooye:v3.0-beta5
+    container_name: ooye
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - CONTENT_LENGTH_WORKAROUND=false
+      - NAMESPACE_PREFIX=_ooye_
+    volumes:
+      - ~/selfhosted/data/ooye:/data
+    networks:
+      - swarmnet # upstreams 6693
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
