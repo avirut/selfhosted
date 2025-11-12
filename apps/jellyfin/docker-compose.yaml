@@ -1,10 +1,12 @@
 services:
   jellyfin:
-    image: jellyfin/jellyfin:10.10.3
+    image: jellyfin/jellyfin:10.11.2
     container_name: jellyfin
     restart: unless-stopped
     volumes:
-      - ~/selfhosted/data/jellyfin:/config
+      - ~/selfhosted/data/jellyfin/config:/config
+      - ~/selfhosted/data/jellyfin/cache:/cache
+      - ~/selfhosted/data/jellyfin/tmp:/tmp
       - /mnt/data/media:/media
     networks:
       - swarmnet # upstreams 8096
