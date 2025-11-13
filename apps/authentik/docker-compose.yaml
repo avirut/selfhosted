@@ -7,63 +7,59 @@ services:
     env_file:
       - .env
     environment:
-      AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:?database user required}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:?database name required}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     volumes:
       - ~/selfhosted/data/authentik/media:/media
       - ~/selfhosted/data/authentik/custom-templates:/templates
       - ./custom.css:/web/dist/custom.css
     networks:
       - swarmnet # port 9000
-      - authentik
 
-  worker:
+  authentik-worker:
     image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
+    container_name: authentik-worker
     user: root
     restart: unless-stopped
     command: worker
     env_file:
       - .env
     environment:
-      AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:?database user required}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:?database name required}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/selfhosted/data/authentik/media:/media
       - ~/selfhosted/data/authentik/certs:/certs
       - ~/selfhosted/data/authentik/custom-templates:/templates
     networks:
-      - authentik
+      - swarmnet
 
-  postgresql:
-    image: postgres:12-alpine
+  authentik-postgresql:
+    image: postgres:17-alpine
+    container_name: authentik-postgresql
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      - POSTGRES_PASSWORD=${PG_PASS:?database password required}
-      - POSTGRES_USER=${PG_USER:?database user required}
-      - POSTGRES_DB=${PG_DB:?database name required}
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:?database user required}
+      POSTGRES_DB: ${PG_DB:?database name required}
     volumes:
       - ~/selfhosted/data/authentik/database:/var/lib/postgresql/data
+      - ~/selfhosted/data/authentik/temp:/tmp/dbdump
     networks:
-      - authentik
-
-  redis:
-    image: redis:alpine
-    restart: unless-stopped
-    networks:
-      - authentik
+      - swarmnet
 
 networks:
   swarmnet:
     external: true
     driver: overlay
-  authentik:
-    name: authentik
