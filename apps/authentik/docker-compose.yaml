@@ -55,7 +55,6 @@ services:
       POSTGRES_DB: ${PG_DB:?database name required}
     volumes:
       - ~/selfhosted/data/authentik/database:/var/lib/postgresql/data
-      - ~/selfhosted/data/authentik/temp:/tmp/dbdump
     networks:
       - swarmnet
 
