@@ -1,6 +1,6 @@
 services:
   actual:
-    image: actualbudget/actual-server:edge
+    image: ghcr.io/actualbudget/actual:25.11.0
     container_name: actual
     restart: unless-stopped
     volumes:
