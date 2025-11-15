@@ -1,0 +1,16 @@
+services:
+  termix:
+    image: ghcr.io/lukegus/termix:release-1.8.0
+    container_name: termix
+    restart: unless-stopped
+    volumes:
+      - ~/selfhosted/data/termix:/app/data
+    environment:
+      PORT: "8080"
+    networks:
+      - swarmnet # upstreams 8080
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
