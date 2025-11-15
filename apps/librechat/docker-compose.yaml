@@ -26,7 +26,6 @@ services:
       - ~/selfhosted/data/librechat/logs:/app/api/logs
     networks:
       - swarmnet
-      - librechatnet
 
   librechat-mongodb:
     container_name: librechat-mongodb
@@ -37,7 +36,7 @@ services:
       - ~/selfhosted/data/librechat/data-node:/data/db
     command: mongod --noauth
     networks:
-      - librechatnet
+      - swarmnet
 
   librechat-meilisearch:
     container_name: librechat-meilisearch
@@ -50,7 +49,7 @@ services:
     volumes:
       - ~/selfhosted/data/librechat/meili_data_v1.7:/meili_data
     networks:
-      - librechatnet
+      - swarmnet
       
   librechat-vectordb:
     container_name: librechat-vectordb
@@ -63,7 +62,7 @@ services:
     volumes:
       - ~/selfhosted/data/librechat/pgdata2:/var/lib/postgresql/data
     networks:
-      - librechatnet
+      - swarmnet
 
   librechat-rag_api:
     container_name: librechat-rag_api
@@ -77,10 +76,9 @@ services:
     env_file:
       - .env
     networks:
-      - librechatnet
+      - swarmnet
 
 networks:
   swarmnet:
     external: true
     driver: overlay
-  librechatnet:
