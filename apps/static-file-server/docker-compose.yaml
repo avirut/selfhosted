@@ -1,6 +1,3 @@
----
-version: "3.9"
-
 services:
   static-file-server:
     image: halverneus/static-file-server:v1.8.11
