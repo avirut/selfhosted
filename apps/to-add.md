@@ -1,0 +1,2 @@
+- [Geohub](https://github.com/benlikescode/geohub) - Self-hosted Geoguessr
+- [Ironmount](https://github.com/nicotsx/ironmount) or [Backrest](https://github.com/garethgeorge/backrest) - Restic GUIs / easy restores; waiting on multi-host from either
