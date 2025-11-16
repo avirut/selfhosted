@@ -78,6 +78,26 @@ services:
     networks:
       - swarmnet # upstreams 7878
 
+  seerr:
+    image: ghcr.io/fallenbagel/jellyseerr:2.7.3
+    container_name: seerr
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      - LOG_LEVEL=debug
+    volumes:
+      - /selfhosted/data/seerr:/app/config
+    networks:
+      - swarmnet # upstreams 5055
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+
   bazarr:
     image: ghcr.io/hotio/bazarr:release
     container_name: bazarr
@@ -93,20 +113,6 @@ services:
       - /mnt/data/media:/mnt/data/media
     networks:
       - swarmnet # upstreams 6767
-
-  doplarr:
-    image: ghcr.io/kiranshila/doplarr:v3.6.3
-    container_name: doplarr
-    restart: unless-stopped
-    environment:
-      - SONARR__URL=http://sonarr:8989/sonarr
-      - RADARR__URL=http://radarr:7878/radarr
-      - SONARR__API=${SONARR__API}
-      - RADARR__API=${RADARR__API}
-      - DISCORD__TOKEN=${DISCORD_TOKEN}
-      - SONARR_SEASON_FOLDERS=true
-    networks:
-      - swarmnet
 
   qbittorrent:
     image: ghcr.io/hotio/qbittorrent:release
@@ -160,6 +166,22 @@ services:
       - 17426:17426/udp
       - 15544:15544/tcp
       - 15544:15544/udp
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FILE=${LOG_FILE:-none}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+    volumes:
+      - /var/lib/flaresolver:/config
+    networks:
+      - swarmnet # upstreams 8191
 
 networks:
   swarmnet:
