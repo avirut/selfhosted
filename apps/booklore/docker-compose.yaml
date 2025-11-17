@@ -1,0 +1,49 @@
+services:
+  booklore:
+    image: ghcr.io/booklore-app/booklore:v1.10.0
+    container_name: booklore
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - USER_ID=0
+      - GROUP_ID=0
+      - BOOKLORE_PORT=6060
+      - SWAGGER_ENABLED=false
+      - FORCE_DISABLE_OIDC=false
+    volumes:
+      - ~/selfhosted/data/booklore/data:/app/data
+      - ~/selfhosted/data/booklore/books:/books
+      - ~/selfhosted/data/booklore/bookdrop:/bookdrop
+    networks:
+      - swarmnet # upstreams 6060
+    depends_on:
+      booklore-mariadb:
+        condition: service_healthy
+
+  booklore-mariadb:
+    image: lscr.io/linuxserver/mariadb:11.4.5
+    container_name: booklore-mariadb
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_DATABASE=booklore
+      - MYSQL_USER=${DATABASE_USERNAME}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - ~/selfhosted/data/booklore/config:/config
+    networks:
+      - swarmnet
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
