@@ -1,12 +1,13 @@
 services:
   homarr:
-    image: ghcr.io/ajnart/homarr:0.15.7
     container_name: homarr
+    image: ghcr.io/homarr-labs/homarr:latest
     restart: unless-stopped
     volumes:
-      - ~/selfhosted/data/homarr/configs:/app/data/configs
-      - ~/selfhosted/data/homarr/icons:/app/public/icons
-      - ~/selfhosted/data/homarr/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/selfhosted/data/homarr/appdata:/appdata
+    env_file:
+      - .env
     networks:
       - swarmnet # upstreams 7575
 
@@ -30,21 +31,12 @@ services:
     image: ghcr.io/autobrr/autobrr:latest
     container_name: autobrr
     restart: unless-stopped
-    environment:
-      - TZ='America/Chicago'
+    env_file:
+      - .env
     volumes:
       - ~/selfhosted/data/autobrr:/config
     networks:
       - swarmnet # upstreams 7474
-
-  omegabrr:
-    image: ghcr.io/autobrr/omegabrr:latest
-    container_name: omegabrr
-    restart: unless-stopped
-    volumes:
-      - ~/selfhosted/data/omegabrr:/config # to be manually edited in data folder for config
-    networks:
-      - swarmnet # available on 7441
 
   sonarr:
     image: ghcr.io/hotio/sonarr:release
