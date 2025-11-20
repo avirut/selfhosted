@@ -136,6 +136,25 @@ services:
       gluetun:
         condition: service_healthy
 
+  ephemera:
+    image: ghcr.io/orwellianepilogue/ephemera:1.3.1
+    container_name: ephemera
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      FLARESOLVERR_URL: http://flaresolverr:8191
+      PUID: 0
+      PGID: 0
+    volumes:
+      - ~/selfhosted/data/ephemera/data:/app/data
+      - ~/selfhosted/data/ephemera/downloads:/app/downloads
+      - ~/selfhosted/data/booklore/bookdrop:/app/ingest
+    network_mode: "service:gluetun" # upstreams 8286
+    depends_on:
+      gluetun:
+        condition: service_healthy
+
   gluetun:
     image: qmcgaw/gluetun:latest
     container_name: gluetun
@@ -154,6 +173,7 @@ services:
       - swarmnet
     ports:
       - 8080:8080
+      - 8286:8286
       - 17426:17426/tcp
       - 17426:17426/udp
       - 15544:15544/tcp
