@@ -1,0 +1,17 @@
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    volumes:
+      - /mnt/data/media/audiobooks:/audiobooks
+      - /mnt/data/media/podcasts:/podcasts
+      - ~/selfhosted/data/audiobookshelf/metadata:/metadata
+      - ~/selfhosted/data/audiobookshelf/config:/config
+    networks:
+      - swarmnet # upstreams 80
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

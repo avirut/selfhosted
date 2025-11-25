@@ -1,0 +1,19 @@
+services:
+  storyteller:
+    image: registry.gitlab.com/storyteller-platform/storyteller:web-v2.3.16
+    container_name: storyteller
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - ENABLE_WEB_READER=true
+    volumes:
+      - /mnt/data/media/storyteller:/data:rw
+      - /mnt/data/media/audiobooks:/mnt/data/media/audiobooks
+    networks:
+      - swarmnet # upstreams 8001
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay

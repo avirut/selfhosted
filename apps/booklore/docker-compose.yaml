@@ -13,7 +13,7 @@ services:
       - FORCE_DISABLE_OIDC=false
     volumes:
       - ~/selfhosted/data/booklore/data:/app/data
-      - ~/selfhosted/data/booklore/books:/books
+      - /mnt/data/media/books:/books
       - ~/selfhosted/data/booklore/bookdrop:/bookdrop
     networks:
       - swarmnet # upstreams 6060

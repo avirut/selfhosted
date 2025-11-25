@@ -155,6 +155,37 @@ services:
       gluetun:
         condition: service_healthy
 
+  seedboxapi:
+    image: myanonamouse/seedboxapi
+    container_name: seedboxapi
+    restart: unless-stopped
+    user: 1000:1000
+    env_file:
+      - .env
+    environment:
+      - DEBUG=1
+      - mam_id=${MAM_ID}
+      - interval=1
+    volumes:
+      - ~/selfhosted/data/seedboxapi:/config
+    network_mode: "service:gluetun"
+
+  readarr:
+    image: ghcr.io/pennydreadful/bookshelf:hardcover-v0.4.20.91
+    container_name: readarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=America/Chicago
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/selfhosted/data/readarr:/config
+      - /mnt/data:/mnt/data
+    networks:
+      - swarmnet # upstreams 8787
+
   gluetun:
     image: qmcgaw/gluetun:latest
     container_name: gluetun
