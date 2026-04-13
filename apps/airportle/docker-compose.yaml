@@ -1,0 +1,12 @@
+services:
+  airportle:
+    image: ghcr.io/avirut/airportle:latest
+    container_name: airportle
+    restart: unless-stopped
+    networks:
+      - swarmnet # upstreams 3000
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
