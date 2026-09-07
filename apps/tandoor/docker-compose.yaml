@@ -1,0 +1,52 @@
+services:
+  tandoor:
+    image: vabene1111/recipes:2.6.14
+    container_name: tandoor
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ~/selfhosted/data/tandoor/staticfiles:/opt/recipes/staticfiles
+      - ~/selfhosted/data/tandoor/mediafiles:/opt/recipes/mediafiles
+    networks:
+      - swarmnet # upstream port 80
+    depends_on:
+      tandoor-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/accounts/login/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  tandoor-db:
+    image: postgres:16-alpine
+    container_name: tandoor-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?database name required}
+      POSTGRES_USER: ${POSTGRES_USER:?database user required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?database password required}
+    volumes:
+      - ~/selfhosted/data/tandoor/postgresql:/var/lib/postgresql/data
+    networks:
+      - swarmnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
