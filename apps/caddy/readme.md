@@ -1,3 +1,15 @@
+### Reloading the Caddyfile
+
+Run `./reload-caddyfile.sh --check` to validate the host's `Caddyfile`, then
+`./reload-caddyfile.sh` to validate and reload it without restarting Caddy.
+The script works from any working directory.
+
+The script copies the host file into the container before validation. Docker's
+single-file bind mount can retain an old inode after an editor replaces the host
+file, so reloading `/etc/caddy/Caddyfile` directly may silently reload stale
+configuration. The temporary copy is removed after use. A failed validation
+leaves the active configuration unchanged.
+
 ### Forward auth
 
 Import the snippet `fa_authentik` into the compose files of other services to enable forward auth.
