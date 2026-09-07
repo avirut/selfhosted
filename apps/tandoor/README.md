@@ -16,9 +16,11 @@ other services on this host. Caddy connects to `tandoor:80`; no host ports are
 published. Do not restart Docker or recreate the shared network for this app.
 
 `.env.template` documents configuration. The live `.env` and `.credentials.env`
-are ignored by Git and have mode `0600`. The latter holds the `avirut` login,
-generated password, API token, token expiration, and the personal space ID. Do
-not regenerate secrets or database passwords during routine updates.
+are ignored by Git and have mode `0600`. The latter holds the `avirut` login
+name, API token, token expiration, and the personal space ID. The owner manages
+the login password in the application; no password copy is retained in this
+credential file. Do not regenerate secrets or database passwords during routine
+updates.
 
 The initial owner was created through `/setup/`; signing in initialized its
 space, which was named `qm` through the API. Public signup is disabled. No

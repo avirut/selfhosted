@@ -17,7 +17,8 @@ are published. All application data, including SQLite, lives under
 
 `.env.template` documents the configuration. The live `.env` and
 `.credentials.env` are ignored by Git and have mode `0600`. The latter holds the
-`avirut` login, generated password, and API key. The initial `admin` account was
+`avirut` login name and API key. The owner manages the login password in the
+application; no password copy is retained in this credential file. The initial `admin` account was
 renamed and its default password replaced through the supported user API before
 the site was published. Default `admin` / `admin` credentials no longer work.
 

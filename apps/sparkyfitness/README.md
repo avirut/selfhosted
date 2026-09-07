@@ -22,7 +22,8 @@ outside Compose, recreate or restart only this frontend afterward as well.
 
 `.env.template` documents configuration. The live `.env` and `.credentials.env`
 are ignored by Git and have mode `0600`. The latter holds the owner login
-(`avirut@kroac.net`), generated password, and API key. The account was created
+(`avirut@kroac.net`) and API key. The owner manages the login password in the
+application; no password copy is retained in this credential file. The account was created
 through the normal signup API, granted admin access by the configured admin
 email, and then signup was disabled before public access. Developer tools are
 disabled. Ordinary operation does not require an AI-provider API key.
