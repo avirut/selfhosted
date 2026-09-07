@@ -1,0 +1,151 @@
+{
+    email avirut@kroac.net
+	acme_dns cloudflare {env.CF_API_TOKEN}
+
+    dynamic_dns {
+		provider cloudflare {env.CF_API_TOKEN} 
+		domains {
+			kroac.net *
+                        quizzies.io *
+                        embral.app *
+		}
+	}
+}
+
+(embral_backend) {
+	# Both conditions matter. The range check alone would also match traffic
+	# that merely egresses from Cloudflare (a Worker, say) straight at the
+	# origin IP without CF-Connecting-IP; the header_up below would then
+	# rewrite X-Forwarded-For to the empty string and the app would see no
+	# client address at all, collapsing every such request into one
+	# rate-limit bucket. Requiring the header sends those down the default
+	# branch instead, where Caddy sets X-Forwarded-For to the peer address.
+	@cloudflare {
+		remote_ip 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+		header CF-Connecting-IP *
+	}
+	handle @cloudflare {
+		reverse_proxy embral:8080 {
+			header_up X-Forwarded-For {header.CF-Connecting-IP}
+		}
+	}
+	handle {
+		reverse_proxy embral:8080
+	}
+}
+
+embral.app {
+	import embral_backend
+}
+
+cloud.embral.app {
+	import embral_backend
+}
+
+kroac.net, www.kroac.net {
+	reverse_proxy static-file-server:8080
+}
+
+auth.kroac.net {
+	reverse_proxy authentik:9000
+}
+
+(authentik) {
+	reverse_proxy /outpost.goauthentik.io/* http://authentik:9000 {
+		header_up Host {http.reverse_proxy.upstream.hostport}
+	}
+
+    forward_auth {args[0]} http://authentik:9000 {
+        uri /outpost.goauthentik.io/auth/caddy
+        copy_headers X-Authentik-Username X-Authentik-Groups X-Authentik-Email X-Authentik-Name X-Authentik-Uid X-Authentik-Jwt X-Authentik-Meta-Jwks X-Authentik-Meta-Outpost X-Authentik-Meta-Provider X-Authentik-Meta-App X-Authentik-Meta-Version
+        trusted_proxies private_ranges
+    }
+}
+
+actual.kroac.net {
+	reverse_proxy actual:5006
+}
+
+termix.kroac.net {
+    reverse_proxy termix:8080
+}
+
+jellyfin.kroac.net {
+	reverse_proxy jellyfin:8096
+#        reverse_proxy 10.0.1.49:8096
+}
+
+books.kroac.net {
+        reverse_proxy booklore:6060
+}
+
+abs.kroac.net {
+        reverse_proxy audiobookshelf:80
+}
+
+storyteller.kroac.net {
+        reverse_proxy storyteller:8001
+}
+
+arr.kroac.net {
+    import authentik *
+    handle /qbt* {
+        redir /qbt /qbt/
+        handle_path /qbt/* {
+            reverse_proxy gluetun:8080 {
+                header_up Host gluetun:8080
+                header_up -Origin
+                header_up -Referer
+            }
+        }
+    }
+    handle /autobrr* {
+        redir /autobrr /autobrr/
+        uri strip_prefix /autobrr
+        reverse_proxy autobrr:7474
+    }
+    reverse_proxy /sabnzbd* gluetun:15544
+    reverse_proxy /sonarr* sonarr:8989
+    reverse_proxy /radarr* radarr:7878
+    reverse_proxy /prowlarr* prowlarr:9696
+    reverse_proxy /bazarr* bazarr:6767
+    reverse_proxy /readarr* readarr:8787
+    reverse_proxy homarr:7575
+}
+
+ephemera.kroac.net {
+    import authentik *
+    reverse_proxy gluetun:8084
+}
+
+seerr.kroac.net {
+    reverse_proxy seerr:5055
+}
+
+chat.kroac.net {
+	reverse_proxy librechat:3080
+}
+
+quizzies.io {
+	reverse_proxy quizzies:3000
+}
+
+airportle.kroac.net {
+        reverse_proxy airportle:3000
+}
+
+windmill.kroac.net {
+	reverse_proxy windmill-server:8000
+}
+
+tandoor.kroac.net {
+	reverse_proxy tandoor:80
+}
+
+grocy.kroac.net {
+	reverse_proxy grocy:80
+}
+
+sparky.kroac.net {
+	reverse_proxy sparkyfitness:80
+}
