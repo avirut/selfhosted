@@ -1,0 +1,87 @@
+services:
+  sparkyfitness:
+    image: codewithcj/sparkyfitness:v1.6.4
+    container_name: sparkyfitness
+    restart: unless-stopped
+    environment:
+      SPARKY_FITNESS_FRONTEND_URL: ${SPARKY_FITNESS_FRONTEND_URL:?frontend URL required}
+      SPARKY_FITNESS_SERVER_HOST: sparkyfitness-server
+      SPARKY_FITNESS_SERVER_PORT: 3010
+      NGINX_LISTEN_PORT: 80
+      NGINX_DUMP_CONFIG: "false"
+      PUID: 1000
+      GUID: 1000
+    networks:
+      - swarmnet # upstream port 80, including /api and /mcp
+    depends_on:
+      sparkyfitness-server:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ && wget -q -O /dev/null http://127.0.0.1/api/auth/get-session"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sparkyfitness-server:
+    image: codewithcj/sparkyfitness_server:v1.6.4
+    container_name: sparkyfitness-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SPARKY_FITNESS_DB_HOST: sparkyfitness-db
+      SPARKY_FITNESS_DB_PORT: 5432
+      NODE_ENV: production
+      PUID: 1000
+      GUID: 1000
+    volumes:
+      - ~/selfhosted/data/sparkyfitness/backup:/app/SparkyFitnessServer/backup
+      - ~/selfhosted/data/sparkyfitness/uploads:/app/SparkyFitnessServer/uploads
+    networks:
+      - swarmnet
+    depends_on:
+      sparkyfitness-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3010/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sparkyfitness-db:
+    image: postgres:18-alpine
+    container_name: sparkyfitness-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${SPARKY_FITNESS_DB_NAME:?database name required}
+      POSTGRES_USER: ${SPARKY_FITNESS_DB_USER:?database user required}
+      POSTGRES_PASSWORD: ${SPARKY_FITNESS_DB_PASSWORD:?database password required}
+    volumes:
+      - ~/selfhosted/data/sparkyfitness/postgresql:/var/lib/postgresql
+    networks:
+      - swarmnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
