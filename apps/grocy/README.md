@@ -33,11 +33,14 @@ endpoints under `/api/stock/`. Product and shopping-list records use the documen
 Create or revoke keys through the application's API-key management page. Do not
 edit its SQLite database for domain operations.
 
-The environment hides recipes, chores, tasks, batteries, equipment, and calendar
-features, plus stock price, expiry, opened-product, and freezing tracking. Pantry,
-shopping, and locations remain available. These flags can be changed later.
-The exact representation of qualitative “have / low / out” inventory is still a
-qm modeling decision; do not invent counts to encode unknown quantities.
+Batteries, equipment, and stock price tracking are enabled alongside pantry,
+shopping, and locations. Recipes, chores, tasks, calendar, expiry, opened-product,
+and freezing tracking remain disabled.
+Maintain quantities as precisely as the available evidence reasonably supports;
+qm normally summarizes those quantities as “have / low / out.” Preserve estimates
+as estimates and reconcile them against later observations. Record receipt prices
+per stock unit, with the store and purchase date, through the supported stock API.
+See qm's food services guide for inventory and purchase-price conventions.
 
 For a consistent full backup, stop only Grocy, archive its complete `config/`
 directory and private credentials/configuration, then start it again. A live
