@@ -149,3 +149,8 @@ grocy.kroac.net {
 sparky.kroac.net {
 	reverse_proxy sparkyfitness:80
 }
+
+qm.kroac.net {
+	import authentik *
+	reverse_proxy qm-web:3000
+}

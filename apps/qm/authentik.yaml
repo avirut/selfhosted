@@ -1,0 +1,31 @@
+# Apply through Authentik's supported blueprint command. Attach the resulting
+# provider to the existing embedded outpost without removing its other providers.
+version: 1
+metadata:
+  name: qm
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: qm-provider
+    identifiers:
+      name: Provider for qm
+    attrs:
+      mode: forward_single
+      external_host: https://qm.kroac.net
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+  - model: authentik_core.application
+    id: qm-application
+    identifiers:
+      slug: qm
+    attrs:
+      name: qm
+      provider: !KeyOf qm-provider
+      meta_launch_url: https://qm.kroac.net/groceries
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf qm-application
+      order: 0
+    attrs:
+      user: !Find [authentik_core.user, [username, avirut]]
+      enabled: true
