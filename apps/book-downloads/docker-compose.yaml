@@ -1,0 +1,116 @@
+services:
+  books-gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    container_name: books-gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=mullvad
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY:?Configure the separate Mullvad device first}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES:?Configure the separate Mullvad device first}
+      - SERVER_HOSTNAMES=${SERVER_HOSTNAMES:?Choose one Mullvad server for the MAM session}
+      - FIREWALL_INPUT_PORTS=8080,8084,5010
+      - PUBLICIP_FILE=/gluetun/public-ip
+      - TZ=America/Chicago
+    volumes:
+      - ~/selfhosted/data/book-downloads/gluetun:/gluetun
+    ports:
+      - 127.0.0.1:8085:8080
+      - 127.0.0.1:5010:5010
+      - 127.0.0.1:8084:8084
+    networks:
+      - swarmnet
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  mousehole:
+    image: tmmrtn/mousehole:0.5.0
+    container_name: mousehole
+    restart: unless-stopped
+    environment:
+      - TZ=Etc/UTC # Startup gate compares Mousehole's timestamps in UTC.
+      - MOUSEHOLE_AUTH_PASSWORD=${MOUSEHOLE_AUTH_PASSWORD:?Set Mousehole password}
+      - MOUSEHOLE_AUTH_TOKEN=${MOUSEHOLE_AUTH_TOKEN:?Set Mousehole token}
+      - MOUSEHOLE_UPDATE_INTERVAL_SECONDS=300
+    volumes:
+      - ~/selfhosted/data/book-downloads/mousehole:/var/lib/mousehole
+    network_mode: service:books-gluetun
+    depends_on:
+      books-gluetun:
+        condition: service_healthy
+        restart: true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  books-qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:5.2.0
+    container_name: books-qbittorrent
+    restart: unless-stopped
+    profiles:
+      - torrents
+    cpus: 1
+    mem_limit: 512m
+    environment:
+      - TZ=America/Chicago
+      - PUID=1000
+      - PGID=1000
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
+      - MOUSEHOLE_AUTH_TOKEN=${MOUSEHOLE_AUTH_TOKEN:?Set Mousehole token}
+    entrypoint: [/bin/sh, /wait-for-mam.sh]
+    volumes:
+      - ./wait-for-mam.sh:/wait-for-mam.sh:ro
+      - ~/selfhosted/data/book-downloads/qbittorrent:/config
+      - ~/selfhosted/data/book-downloads/gluetun:/gluetun:ro
+      - ~/selfhosted/data/books/downloads:/books/downloads
+    network_mode: service:books-gluetun
+    depends_on:
+      books-gluetun:
+        condition: service_healthy
+        restart: true
+      mousehole:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  shelfmark:
+    image: ghcr.io/calibrain/shelfmark:v1.3.15
+    container_name: shelfmark
+    restart: unless-stopped
+    cpus: 1
+    mem_limit: 1536m
+    environment:
+      - TZ=America/Chicago
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ~/selfhosted/data/shelfmark/config:/config
+      - ~/selfhosted/data/books/incoming:/books
+    network_mode: service:books-gluetun
+    depends_on:
+      books-gluetun:
+        condition: service_healthy
+        restart: true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
