@@ -76,11 +76,7 @@ jellyfin.kroac.net {
 }
 
 books.kroac.net {
-        reverse_proxy booklore:6060
-}
-
-abs.kroac.net {
-        reverse_proxy audiobookshelf:80
+        reverse_proxy bookorbit:3000
 }
 
 storyteller.kroac.net {
@@ -109,13 +105,7 @@ arr.kroac.net {
     reverse_proxy /radarr* radarr:7878
     reverse_proxy /prowlarr* prowlarr:9696
     reverse_proxy /bazarr* bazarr:6767
-    reverse_proxy /readarr* readarr:8787
     reverse_proxy homarr:7575
-}
-
-ephemera.kroac.net {
-    import authentik *
-    reverse_proxy gluetun:8084
 }
 
 seerr.kroac.net {

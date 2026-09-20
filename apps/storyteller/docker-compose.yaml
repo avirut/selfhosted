@@ -1,17 +1,26 @@
 services:
   storyteller:
-    image: registry.gitlab.com/storyteller-platform/storyteller:web-v2.3.16
+    image: registry.gitlab.com/storyteller-platform/storyteller:web-v2.14.21
     container_name: storyteller
     restart: unless-stopped
+    cpus: 2
+    mem_limit: 4g
     env_file:
       - .env
     environment:
       - ENABLE_WEB_READER=true
     volumes:
-      - /mnt/data/media/storyteller:/data:rw
-      - /mnt/data/media/audiobooks:/mnt/data/media/audiobooks
+      - ~/selfhosted/data/storyteller:/data:rw
+      - ~/selfhosted/data/books/library:/library:ro
+    ports:
+      - 127.0.0.1:8001:8001
     networks:
       - swarmnet # upstreams 8001
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
 
 networks:
   swarmnet:

@@ -1,0 +1,83 @@
+services:
+  bookorbit:
+    image: ghcr.io/bookorbit/bookorbit:2.10.0
+    container_name: bookorbit
+    restart: unless-stopped
+    init: true
+    cpus: 2
+    mem_limit: 1536m
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - POSTGRES_HOST=bookorbit-db
+      - POSTGRES_PORT=5432
+      - APP_URL=https://books.kroac.net
+      - CLIENT_URL=https://books.kroac.net
+      - TZ=America/Chicago
+      - PUID=1000
+      - PGID=1000
+      - NODE_MAX_OLD_SPACE_SIZE=1024
+      - BOOK_DOCK_PATH=/books/incoming
+      - LIBRARY_BROWSE_ROOT=/books/library
+    volumes:
+      - ~/selfhosted/data/books:/books
+      - ~/selfhosted/data/bookorbit/app:/data
+    ports:
+      - 127.0.0.1:3006:3000
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      bookorbit-db:
+        condition: service_healthy
+    networks:
+      - swarmnet # upstreams 3000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  bookorbit-db:
+    image: pgvector/pgvector:pg18
+    container_name: bookorbit-db
+    restart: unless-stopped
+    cpus: 1
+    mem_limit: 512m
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      - POSTGRES_DB=${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ~/selfhosted/data/bookorbit/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - swarmnet
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  swarmnet:
+    external: true
+    driver: overlay
