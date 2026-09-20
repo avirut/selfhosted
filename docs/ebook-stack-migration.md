@@ -33,3 +33,26 @@ The existing MAM torrent reports an account that is parked, and the old updater 
 ## Retirement authorized
 
 Readarr/Bookshelf, BookLore and MariaDB, seedboxapi, stopped Audiobookshelf, and old Shelfmark/Ephemera installations and data on chrysaora. Book files must be verified on skepsis before their old copies are removed. No retention of retired application databases or user history is required.
+
+
+## Deployed status (2026-09-20)
+
+- BookOrbit 2.10.0 and PostgreSQL/pgvector 18 are running on skepsis. `https://books.kroac.net` serves BookOrbit; the setup endpoint is closed after owner creation. The private owner credential is in `data/bookorbit/admin.json` (0600); Shelfmark and book qBittorrent use that same owner login. Existing Storyteller logins remain valid.
+- Storyteller web-v2.14.21 serves its existing public hostname. The five previous aligned books survived the upgrade; authenticated partial downloads and every SMIL audio reference were verified. No missing resources were found.
+- 271 EPUBs (774,236,085 bytes before metadata write-back), seven M4Bs (4,873,005,019 bytes), and 417 Storyteller files (4,865,609,179 bytes) were copied and SHA-256 verified before source deletion. All EPUB archives passed CRC checks. All 271 active BookLore records were imported; their titles were verified in the resulting EPUB metadata. The one deleted BookLore record was omitted.
+- BookOrbit watches the ebook and audiobook folders. EPUB metadata write-back is enabled. Its Book Dock is configured for metadata lookup and automatic filing at confidence 90, with uncertain files held for review. Native request import verification is also 90. Automatic grabs/searches remain off.
+- MAM and TorrentLeech Torznab connections point to the existing Prowlarr and are saved **disabled**. The qBittorrent API configuration cannot be saved until the new VPN container's hostname resolves. Its intended client settings are category `bookorbit`, hardlinks off, and identical `/books/downloads` paths in both containers.
+- The separate book download Compose project is prepared with Gluetun v3.41.3, qBittorrent 5.2.0, Mousehole 0.5.0, and Shelfmark v1.3.15. Shelfmark and qBittorrent authentication/configuration were checked in temporary containers with networking disabled; those test containers were removed. DHT/PEX/LSD are disabled, seeding limits are unlimited, and qBittorrent is bound to `tun0`.
+- qBittorrent's startup gate passed seven isolated cases, including stale state, wrong IP, missing/rejected cookies, and MAM rate limiting. These tests made no MAM requests. Real VPN recovery and restart tests remain required before enabling downloads.
+- QM has paired requests, ownership checks, retry protection, library status, isolated file staging, and Storyteller import/alignment commands. Its ten-minute user timer is installed and verified. The existing Elantris pair was reused live. The two previously unaligned Cixin Liu pairs are being prepared/processed from owned files after correcting author-name metadata. No new book download was submitted.
+- BookLore/MariaDB, Readarr, seedboxapi, old Shelfmark, Audiobookshelf, and old Storyteller containers were removed from chrysaora. Their obsolete data and the migrated media source copies were deleted. Old application definitions are archived. Retired image tags were removed without global pruning.
+- The old MAM torrent and its payload remain in the original qBittorrent pending seeding-account review. All 83 existing torrents and the movie/TV services remain on chrysaora. Its pre-existing unstaged WireGuard-address change was preserved. No Embral files or containers were modified. Only ebook Caddy routes changed, followed by validation and reload.
+
+## Remaining activation work
+
+1. Save a separate Mullvad device's configuration at `data/book-downloads/mullvad.conf`; configure its key, address, and selected server in `apps/book-downloads/.env`, then delete the intermediate file.
+2. Unpark MAM and check seeding obligations. Start the new VPN and Mousehole, create a dedicated ASN-locked dynamic-seedbox session for their reported IP, and keep it separate from Prowlarr's session. Resolve the existing seeded torrent before retiring its old copy.
+3. Check tunnel binding, kill switch, restart order, session persistence, and VPN recovery. Start the torrent profile only after those prerequisites; configure and enable the BookOrbit client and sources deliberately.
+4. Start Shelfmark, add its Caddy route with native login, and verify a direct-source import. Complete QM's automatic direct-source selection/fallback; currently its paired requests use BookOrbit and Shelfmark remains a separate fallback.
+5. Verify new alignment results on iPhone/iPad and in the browser. CPU processing is sequential with two CPUs and 4 GiB maximum memory. Alignment status alone is not a quality guarantee.
+6. User lingering is still disabled on skepsis. The existing pending `loginctl enable-linger avirut` step also affects the new QM user timer's operation without an active login.
