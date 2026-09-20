@@ -1,5 +1,7 @@
 **Ebook stack evaluation, 20 September 2026.** Use Storyteller as the reading/listening system, BookOrbit as the catalog and metadata editor, BookOrbit's requests for indexed downloads, and the existing Shelfmark for direct downloads. Keep the existing qBittorrent/Gluetun pair. Replace the failing MAM updater with Mousehole and repair the account/session configuration. Extend qm to coordinate one logical request across both formats and Storyteller processing. Audiobookshelf is unnecessary for the stated iPhone/iPad/browser workflow.
 
+Implementation update: see the [migration status](ebook-stack-migration.md) for the current skepsis deployment. This report records the setup before migration.
+
 This is a proposed architecture, not a completed deployment. The investigation used read-only Docker inspection, application configuration, SQLite queries, file counts, HTTP checks, and qBittorrent API reads on both hosts. No application was upgraded, restarted, reconfigured, or asked to acquire a book. Account credentials and raw tracker URLs are excluded from this report.
 
 **What is actually running.** SSH to chrysaora works from skepsis through its Tailscale address. Its short hostname did not resolve from this shell. You can perform the eventual work from this workspace using SSH; you do not need a separate interactive session on chrysaora.
