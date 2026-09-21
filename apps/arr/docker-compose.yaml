@@ -12,7 +12,7 @@ services:
       - swarmnet # upstreams 7575
 
   prowlarr:
-    image: ghcr.io/hotio/prowlarr:release
+    image: ghcr.io/hotio/prowlarr:release-2.6.5.5623
     container_name: prowlarr
     restart: unless-stopped
     environment:
@@ -39,7 +39,7 @@ services:
       - swarmnet # upstreams 7474
 
   sonarr:
-    image: ghcr.io/hotio/sonarr:release
+    image: ghcr.io/hotio/sonarr:release-4.0.20.3014
     container_name: sonarr
     restart: unless-stopped
     environment:
@@ -55,7 +55,7 @@ services:
       - swarmnet # upstreams 8989
 
   radarr:
-    image: ghcr.io/hotio/radarr:release
+    image: ghcr.io/hotio/radarr:release-6.4.4.10685
     container_name: radarr
     restart: unless-stopped
     environment:
