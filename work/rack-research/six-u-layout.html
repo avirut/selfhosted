@@ -1,0 +1,89 @@
+<div id="rack-six-u-study">
+  <style>
+    #rack-six-u-study .rack-drawing { width: 100%; display: block; }
+    #rack-six-u-study .rack-drawing text { fill: var(--foreground); }
+  </style>
+  <div>Enclosed 6U layout · side view · proposed mounting</div>
+  <svg class="rack-drawing" role="img" aria-labelledby="rack-study-title rack-study-description">
+    <title id="rack-study-title">A sideways Velka 7 above a three-unit eight-drive enclosure.</title>
+    <desc id="rack-study-description">The space is 355.6 millimeters deep and 266.7 millimeters high. The lower three units contain a 195 millimeter deep eight-drive enclosure with a proposed fan bracket behind it. The upper three units contain a 304 millimeter deep, 115 millimeter high Velka 7 case. Its width across the rack is 178 millimeters. The remaining 18.35 millimeters of upper-compartment height must accommodate mounting and intake clearance. This arrangement requires a shorter CPU cooler, an SFX power supply, a rack cradle, and a protected opening for drive cables. Side-facing motherboard connections, cable reach, and airflow need a physical fit check.</desc>
+    <g class="rack-marks"></g>
+  </svg>
+  <div class="text-small">PC case across rack: 178 mm. Upper 3U spare height: 18.35 mm total.</div>
+  <div class="text-small">Mounts, cable exits and cooling remain to be validated.</div>
+  <script>
+    (() => {
+      const root = document.getElementById('rack-six-u-study');
+      const svg = root.querySelector('.rack-drawing');
+      const marks = root.querySelector('.rack-marks');
+      const ns = 'http://www.w3.org/2000/svg';
+      const depth = 355.6;
+      const height = 266.7;
+      function add(tag, attrs, value) {
+        const item = document.createElementNS(ns, tag);
+        Object.entries(attrs).forEach(([key, val]) => item.setAttribute(key, val));
+        if (value !== undefined) item.textContent = value;
+        marks.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const width = root.getBoundingClientRect().width || 320;
+        const left = 34;
+        const top = 32;
+        const scale = Math.min((width - left - 10) / depth, 1.6);
+        const base = top + height * scale;
+        const x = mm => left + mm * scale;
+        const y = mm => base - mm * scale;
+        marks.replaceChildren();
+        svg.setAttribute('viewBox', `0 0 ${width} ${base + 44}`);
+        svg.setAttribute('height', base + 44);
+        function rect(d, z, w, h, fill, opacity = 0.15) {
+          add('rect', {x:x(d), y:y(z+h), width:w*scale, height:h*scale,
+            fill, 'fill-opacity':opacity});
+        }
+        function text(d, z, value, attrs={}) {
+          add('text', {x:x(d), y:y(z), 'text-anchor':'middle',
+            'dominant-baseline':'middle', class:'text-small', ...attrs}, value);
+        }
+        function line(x1,y1,x2,y2,extra={}) {
+          add('line', {x1,y1,x2,y2,stroke:'var(--border)', 'stroke-width':1,...extra});
+        }
+        add('rect',{x:left,y:top,width:depth*scale,height:height*scale,
+          fill:'none',stroke:'var(--border)','stroke-width':1});
+        line(left,y(133.35),x(depth),y(133.35));
+        add('text',{x:left,y:18,class:'text-small'},'Front');
+        add('text',{x:x(depth),y:18,'text-anchor':'end',class:'text-small'},'Rear');
+        add('text',{x:14,y:y(200),'text-anchor':'middle',class:'text-small'},'3U');
+        add('text',{x:14,y:y(65),'text-anchor':'middle',class:'text-small'},'3U');
+
+        // Case body to scale; mounting gaps remain provisional.
+        rect(0,142,304,115,'var(--viz-series-2)',0.14);
+        text(152,222,'Velka 7 · enclosed PC');
+        text(152,199,'304 mm deep × 115 mm high');
+        text(152,176,'47 mm cooler + SFX PSU');
+
+        rect(0,0,195,133,'var(--viz-series-1)',0.18);
+        text(97.5,91,'8-drive enclosure');
+        text(97.5,67,'195 mm deep');
+        text(97.5,43,'3U');
+
+        // Proposed fan position, not a completed bracket design.
+        rect(220,20,25,92,'var(--foreground)',0.10);
+        const serviceX=x(232.5), serviceY=y(66);
+        add('text',{x:serviceX,y:serviceY,'text-anchor':'middle',
+          'dominant-baseline':'middle',class:'text-small',
+          transform:`rotate(-90 ${serviceX} ${serviceY})`},'HDD fans');
+        const gpuX=x(300),gpuY=y(66);
+        add('text',{x:gpuX,y:gpuY,'text-anchor':'middle',
+          'dominant-baseline':'middle',class:'text-small',
+          transform:`rotate(-90 ${gpuX} ${gpuY})`},'Drive cables');
+
+        const dimensionY=base+24;
+        add('text',{x:x(depth/2),y:dimensionY,'text-anchor':'middle',
+          'dominant-baseline':'middle',class:'text-small'},'14 in / 355.6 mm usable depth');
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>
