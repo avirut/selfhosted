@@ -1,0 +1,10 @@
+[Unit]
+Description=Check MAM account health hourly
+
+[Timer]
+OnBootSec=10min
+OnUnitInactiveSec=1h
+Unit=mam-health.service
+
+[Install]
+WantedBy=timers.target

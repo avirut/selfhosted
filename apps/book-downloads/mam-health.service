@@ -1,0 +1,13 @@
+[Unit]
+Description=Check MAM account ratio and bonus balance
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=%h/selfhosted/data/book-downloads/mam-account-cookie
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/selfhosted
+ExecStart=/usr/bin/flock --exclusive --timeout 5 %h/selfhosted/data/book-downloads/mam-health.lock /usr/bin/python3 %h/selfhosted/apps/book-downloads/mam-health.py
+TimeoutStartSec=1min
+UMask=0077
+Nice=10
