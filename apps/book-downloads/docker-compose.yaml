@@ -53,7 +53,7 @@ services:
         max-file: "3"
 
   books-qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.2.0
+    image: lscr.io/linuxserver/qbittorrent:5.1.4 # BookOrbit 2.10 expects the SID cookie used before 5.2.
     container_name: books-qbittorrent
     restart: unless-stopped
     profiles:
@@ -65,7 +65,7 @@ services:
       - PUID=1000
       - PGID=1000
       - WEBUI_PORT=8080
-      - TORRENTING_PORT=6881
+      - TORRENTING_PORT=51413 # MAM rejects the default 6881 port.
       - MOUSEHOLE_AUTH_TOKEN=${MOUSEHOLE_AUTH_TOKEN:?Set Mousehole token}
     entrypoint: [/bin/sh, /wait-for-mam.sh]
     volumes:

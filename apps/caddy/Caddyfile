@@ -83,6 +83,10 @@ storyteller.kroac.net {
         reverse_proxy storyteller:8001
 }
 
+shelfmark.kroac.net {
+        reverse_proxy books-gluetun:8084
+}
+
 arr.kroac.net {
     import authentik *
     handle /qbt* {
