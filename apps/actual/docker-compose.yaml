@@ -1,7 +1,6 @@
 services:
   actual:
-    # todo: lock to 25.12.0 once released
-    image: ghcr.io/actualbudget/actual:edge
+    image: ghcr.io/actualbudget/actual:26.9.0
     container_name: actual
     restart: unless-stopped
     volumes:
