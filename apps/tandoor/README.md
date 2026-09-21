@@ -1,7 +1,7 @@
 # Tandoor
 
 Personal recipe store at https://tandoor.kroac.net. The application image is pinned
-to 2.6.14; its dedicated database uses PostgreSQL 16.
+to 2.6.15; its dedicated database uses PostgreSQL 16.
 
 Run commands from this directory:
 
@@ -44,4 +44,10 @@ Before upgrading, back up persistent data, choose an explicit application
 version, pull only this stack, and verify login and API access afterward.
 `docker compose stop` preserves the data. Do not remove the data directory.
 
-Upstream deployment reference: [released Compose example](https://github.com/TandoorRecipes/recipes/blob/2.6.14/docs/install/docker/plain/docker-compose.yml).
+Upstream deployment reference: [released Compose example](https://github.com/TandoorRecipes/recipes/blob/2.6.15/docs/install/docker/plain/docker-compose.yml).
+
+Updated on 2026-09-20 after saving and checking a database dump, recipe media
+archive and private configuration under `~/.local/state/qm/backups/apps-20260920/`.
+Container health and the existing recipe API token were verified; recipe list
+records matched the pre-upgrade snapshot. Roll back migrations by restoring
+the saved database/media/configuration with the previous image.
