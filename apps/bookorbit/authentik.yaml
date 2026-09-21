@@ -1,0 +1,43 @@
+# Apply with BOOKORBIT_OIDC_CLIENT_SECRET in the blueprint command's environment.
+# This application is independent of the shared proxy outpost.
+version: 1
+metadata:
+  name: BookOrbit
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: bookorbit-provider
+    identifiers:
+      name: Provider for BookOrbit
+    attrs:
+      client_type: confidential
+      client_id: bookorbit
+      client_secret: !Env BOOKORBIT_OIDC_CLIENT_SECRET
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      redirect_uris:
+        - matching_mode: strict
+          url: https://books.kroac.net/oauth2-callback
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
+      sub_mode: hashed_user_id
+      issuer_mode: per_provider
+      include_claims_in_id_token: true
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+  - model: authentik_core.application
+    id: bookorbit-application
+    identifiers:
+      slug: bookorbit
+    attrs:
+      name: BookOrbit
+      provider: !KeyOf bookorbit-provider
+      meta_launch_url: https://books.kroac.net
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf bookorbit-application
+      order: 0
+    attrs:
+      user: !Find [authentik_core.user, [username, avirut]]
+      enabled: true
