@@ -3,7 +3,7 @@ services:
     image: registry.gitlab.com/storyteller-platform/storyteller:web-v2.14.21
     container_name: storyteller
     restart: unless-stopped
-    cpus: 2
+    cpus: 4
     mem_limit: 4g
     env_file:
       - .env

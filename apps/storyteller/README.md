@@ -1,0 +1,15 @@
+# Storyteller on skepsis
+
+The library is served at `https://storyteller.kroac.net`. Source media is copied into Storyteller's own assets; BookOrbit's library mount is read-only. Do not delete source files or caches to diagnose slow processing.
+
+The container has four CPU cores and 4 GiB maximum memory. The CPU allowance was raised live from two cores without restarting the container. Native settings currently use whisper.cpp, the `small` model (`small.en` for English), one transcription at a time, and turbo setting 1. The worker runs one book at a time. A 57-hour audiobook can take a long time on this CPU; faster models or another transcription host are separate quality/performance choices.
+
+Use BCP 47 language codes: the six Stormlight entries had `english`, which this version passes through and uses to select the multilingual `small` model. Their language was corrected to `en` through the native metadata API. Rhythm of War was continued with its first two completed transcripts retained, and its live process now uses `ggml-small.en.bin` and `--language en`. Check this when importing further books. A completed 13.3-minute chapter took 6m24s on the four-core allowance; this is a sample, not a reliable whole-book ETA.
+
+Read the live queue with `npm run --silent books -- queue` from `/home/avirut/qm`. This uses the supported Storyteller API and reads cached transcript-file counts; it does not modify the database. Check `docker stats --no-stream storyteller`, `docker top storyteller`, and recent `docker logs` to distinguish active transcription from a stopped worker. A chapter's transcript is saved when that chapter finishes, so a quiet checkpoint timestamp alone is not evidence of a stall.
+
+In web-v2.14.21, the UI has a current-book indicator but does not expose the stored queue order. Stage/progress reporting also has known limitations confirmed in the shipped source: stages change only on progress callbacks, the last split-track update can exceed 100%, and cached transcript progress can overcount by one. Reported percentages are per stage, not whole-book percentages. The queue command includes actual completed-track counts alongside the app's reported percentage.
+
+The owner requested Rhythm of War first. It was moved ahead of Death’s End, The Way of Kings, Oathbringer, Words of Radiance, Edgedancer, Dawnshard, and The Three-Body Problem using supported stop/continue APIs. The Three-Body Problem's eight completed transcript files were retained. Always read the live queue before making further changes.
+
+To reorder, hold QM's `var/books/operations.lock` so its sync cannot race the change. Use `DELETE /api/v2/books/<uuid>/process` to stop/dequeue, wait for STOPPED, then `POST` to the same endpoint without a restart argument to continue with cached work. Never delete the book or request a full/transcription restart for queue ordering. After stopping an active job, verify that the next queued book actually starts: this version left the next job queued until it was explicitly stopped and continued. A queued label alone does not prove a worker is running.
