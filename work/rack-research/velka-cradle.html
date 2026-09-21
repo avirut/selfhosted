@@ -1,0 +1,112 @@
+<div id="velka-cradle-study">
+  <style>
+    #velka-cradle-study .cradle-svg { display: block; width: 100%; }
+    #velka-cradle-study .cradle-svg text { fill: var(--foreground); }
+    #velka-cradle-study .cradle-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  </style>
+  <div>Bolted metal cradle · view from above · concept</div>
+  <label class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" checked id="velka-cradle-case">
+    <span class="form-check-label">Show case position</span>
+  </label>
+  <svg class="cradle-svg" role="img" aria-labelledby="velka-cradle-title velka-cradle-desc">
+    <title id="velka-cradle-title">Two support rails attached to four rack uprights carry the Velka case.</title>
+    <desc id="velka-cradle-desc">Conceptual top view, not a fabrication drawing. The user measured 254 millimeters between the extrusion uprights, a 219.075 millimeter opening between the front rack rails, and 355.6 millimeters between the front and rear uprights. Two narrow metal ledges run front to back under the case edges. Four end brackets connect them to the rack uprights. Corner retainers keep the case from lifting or sliding. The middle remains open for ventilation. The 178 by 304 millimeter case footprint is offset to provide a larger cable space on its motherboard port side. Folded rail sections, case contact points, fastener access and port clearances remain to be verified.</desc>
+    <g class="cradle-marks"></g>
+  </svg>
+  <div class="cradle-legend text-small">
+    <span>1 · Bolted end brackets</span>
+    <span>2 · Support rails under case edges</span>
+    <span>3 · Removable corner retainers</span>
+  </div>
+  <div class="text-small" aria-live="polite" id="velka-cradle-status">Case outline shown; central ventilation area stays open.</div>
+  <script>
+    (() => {
+      const root = document.getElementById('velka-cradle-study');
+      const svg = root.querySelector('.cradle-svg');
+      const marks = root.querySelector('.cradle-marks');
+      const toggle = root.querySelector('#velka-cradle-case');
+      const status = root.querySelector('#velka-cradle-status');
+      const ns = 'http://www.w3.org/2000/svg';
+      function draw() {
+        const width = root.getBoundingClientRect().width || 320;
+        const s = Math.min((width - 30) / 294, 1.15);
+        const start = (width - 294*s)/2;
+        const x = n => start + (n+20)*s;
+        const y = n => 60 + n*s;
+        marks.replaceChildren();
+        svg.setAttribute('viewBox', `0 0 ${width} ${104+399*s}`);
+        svg.setAttribute('height', 104+399*s);
+        function add(tag, attrs, value) {
+          const e = document.createElementNS(ns,tag);
+          Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+          if(value !== undefined)e.textContent=value;
+          marks.appendChild(e);
+          return e;
+        }
+        function box(a,b,w,h,fill,opacity=1,extra={}) {
+          return add('rect',{x:x(a),y:y(b),width:w*s,height:h*s,
+            fill,'fill-opacity':opacity,...extra});
+        }
+        function label(a,b,value,extra={}) {
+          return add('text',{x:x(a),y:y(b),class:'text-small',
+            'text-anchor':'middle','dominant-baseline':'middle',...extra},value);
+        }
+        function marker(a,b,n) {
+          add('circle',{cx:x(a),cy:y(b),r:10,fill:'var(--background)',
+            stroke:'var(--foreground)','stroke-width':1});
+          label(a,b,n);
+        }
+        label(127,-43,'Front opening · 219.1 mm');
+        label(127,395,'Rack rear');
+        label(127,416,'254 mm between uprights');
+        // Four uprights shown only where they meet the cradle.
+        for(const a of [-20,254])for(const b of [-20,355.6]) {
+          box(a,b,20,20,'var(--foreground)',0.12);
+          box(a+8,b+3,4,14,'var(--foreground)',0.22);
+        }
+        // The front rack rails narrow the opening by 34.925 mm total.
+        box(0,-20,17.4625,20,'var(--foreground)',0.25);
+        box(236.5375,-20,17.4625,20,'var(--foreground)',0.25);
+        // End brackets join the support rails to all four uprights.
+        for(const b of [0,341.6]) {
+          box(-3,b,42,14,'var(--viz-series-1)',0.32);
+          box(185,b,72,14,'var(--viz-series-1)',0.32);
+        }
+        // The turned-up flanges are outside the case, the ledges underneath it.
+        for(const a of [14,185]) {
+          box(a,0,25,355.6,'var(--viz-series-1)',0.18);
+          box(a===14 ? a : a+22,0,3,355.6,'var(--viz-series-1)',0.7);
+        }
+        if(toggle.checked) {
+          box(22,25,178,304,'var(--viz-series-2)',0.08,
+            {stroke:'var(--foreground)','stroke-width':1});
+          label(111,145,'Velka 7');
+          label(111,169,'178 × 304 mm footprint');
+          label(111,192,'115 mm high');
+        } else {
+          label(111,166,'Open center');
+          label(111,190,'for ventilation');
+        }
+        // Small retainers overlap only the corner regions in this concept.
+        for(const a of [18,185])for(const b of [19,322]) {
+          box(a,b,19,13,'var(--viz-series-3)',0.65);
+        }
+        const px=x(232),py=y(178);
+        add('text',{x:px,y:py,class:'text-small','text-anchor':'middle',
+          'dominant-baseline':'middle',transform:`rotate(-90 ${px} ${py})`},'Port-side cable space');
+        marker(233,7,'1');
+        marker(26.5,250,'2');
+        marker(197,329,'3');
+      }
+      toggle.addEventListener('change',()=>{
+        draw();
+        status.textContent=toggle.checked
+          ? 'Case outline shown; central ventilation area stays open.'
+          : 'Case hidden; both rails attach at the front and rear.';
+      });
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>
