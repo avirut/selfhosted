@@ -1,7 +1,7 @@
 # SparkyFitness
 
 Personal nutrition, exercise, and body-measurement store at
-https://sparky.kroac.net. Both application images are pinned to v1.6.4 and use a
+https://sparky.kroac.net. Both application images are pinned to v1.7.2 and use a
 dedicated PostgreSQL 18 database.
 
 Run commands from this directory:
@@ -58,4 +58,14 @@ requires OAuth application credentials and account authorization. Those device
 integrations and the Tandoor recipe provider have not been configured yet; no
 external accounts were connected during deployment.
 
-Upstream deployment reference: [released Compose example](https://github.com/CodeWithCJ/SparkyFitness/blob/v1.6.4/docker/docker-compose.prod.yml).
+Upstream deployment reference: [released Compose example](https://github.com/CodeWithCJ/SparkyFitness/blob/v1.7.2/docker/docker-compose.prod.yml).
+
+Updated on 2026-09-20. Database/roles, uploads, existing backups, private
+configuration and previous image references are saved under
+`~/.local/state/qm/backups/apps-20260920/` (private). Both containers passed
+health checks; the existing MCP API key, tool discovery, and owner preferences
+were verified. Existing signup/login environment policies remain supported in
+v1.7.2 and were retained; encryption and authentication secrets were unchanged.
+For rollback after migrations, stop both application containers and restore the
+database and assets together with the saved configuration and old images; merely
+downgrading images against a migrated database is not a safe rollback.

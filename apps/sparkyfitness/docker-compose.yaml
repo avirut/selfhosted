@@ -1,6 +1,6 @@
 services:
   sparkyfitness:
-    image: codewithcj/sparkyfitness:v1.6.4
+    image: codewithcj/sparkyfitness:v1.7.2
     container_name: sparkyfitness
     restart: unless-stopped
     environment:
@@ -29,7 +29,7 @@ services:
         max-file: "3"
 
   sparkyfitness-server:
-    image: codewithcj/sparkyfitness_server:v1.6.4
+    image: codewithcj/sparkyfitness_server:v1.7.2
     container_name: sparkyfitness-server
     restart: unless-stopped
     env_file:
