@@ -5,6 +5,11 @@ that guest's SSD under `data/ollama`; persistent ebook services run elsewhere.
 Create the data directory before `docker compose up -d`. The pinned official
 image was pulled and NVIDIA access checked during provisioning.
 
+This uses Docker's native CDI device support with NVIDIA Container Toolkit's
+generated device specification. The legacy `--gpus` hook lost GPU access after
+a systemd daemon reload during provisioning; CDI keeps the device mappings in
+the container configuration. Generate/refresh CDI before starting the project.
+
 The API is bound to guest loopback; private network access is configured
 separately. Do not expose the unauthenticated API to the public internet.
 One model and one request run at a time initially, with idle models unloaded
