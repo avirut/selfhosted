@@ -148,7 +148,7 @@ services:
       - VPN_SERVICE_PROVIDER=mullvad
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=10.71.63.242/32
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES:-10.71.63.242/32}
       - SERVER_CITIES=Amsterdam
     networks:
       - swarmnet
