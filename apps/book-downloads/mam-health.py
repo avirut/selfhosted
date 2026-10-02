@@ -5,7 +5,6 @@ import json
 import math
 import os
 from pathlib import Path
-import shlex
 import stat
 import subprocess
 import sys
@@ -19,7 +18,7 @@ GIB = 1024**3
 
 # A separate account-monitor session is required. Never borrow Prowlarr's cookie
 # or Mousehole's dynamic-seedbox session: jsonLoad.php rotates mam_id on reads.
-REMOTE = r'''
+REQUEST = r'''
 import http.cookies, json, sys, urllib.request
 try:
     cookie = json.load(sys.stdin)["cookie"]
@@ -97,8 +96,7 @@ def main():
         if not cookie or any(c.isspace() for c in cookie) or len(cookie) > 8192:
             raise ValueError("Invalid MAM account cookie file")
         result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
-             "-o", "ConnectTimeout=10", "100.115.19.60", "python3", "-c", shlex.quote(REMOTE)],
+            [sys.executable, "-c", REQUEST],
             input=json.dumps({"cookie": cookie}), capture_output=True, text=True, timeout=45,
         )
         if result.returncode:
@@ -114,7 +112,7 @@ def main():
         print(json.dumps(snapshot))
         return 1 if account["actions"] else 0
     except Exception as error:
-        # Never emit raw SSH/API output or credentials, including malformed JSON.
+        # Never emit raw API output or credentials, including malformed JSON.
         message = str(error) if isinstance(error, ValueError) and not isinstance(error, json.JSONDecodeError) else "MAM account check failed"
         previous = None
         if SNAPSHOT.exists():
