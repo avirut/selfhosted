@@ -53,6 +53,27 @@ def atomic_write(path, text):
         temporary.unlink(missing_ok=True)
 
 
+def reserve_attempt(now):
+    """Persist before network I/O: restarts and failures cannot poll twice a day.
+
+    The service's existing flock serializes this operation and cookie rotation.
+    Bootstrap from the previous snapshot when upgrading the hourly monitor.
+    """
+    attempt = SNAPSHOT.with_name("mam-health-attempt.json")
+    source = attempt if attempt.exists() else SNAPSHOT
+    if source.exists():
+        try:
+            last = datetime.fromisoformat(json.loads(source.read_text())["checkedAt"])
+            if last.tzinfo is None:
+                raise ValueError("Missing timezone")
+        except (OSError, ValueError, KeyError, TypeError):
+            raise ValueError("Invalid MAM check timestamp; inspect local state before polling") from None
+        if (now - last).total_seconds() < 86400:
+            return False
+    atomic_write(attempt, json.dumps({"checkedAt": now.isoformat()}) + "\n")
+    return True
+
+
 def evaluate(account):
     values = {}
     for key in ("uploaded_bytes", "downloaded_bytes", "seedbonus", "wedges"):
@@ -87,8 +108,12 @@ def evaluate(account):
 
 def main():
     os.umask(0o077)
-    checked = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(timezone.utc)
+    checked = now.isoformat()
     try:
+        if not reserve_attempt(now):
+            print("MAM account check skipped: the previous attempt was less than 24 hours ago.")
+            return 0
         info = COOKIE.lstat()
         if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077:
             raise ValueError("MAM account cookie must be a regular file with mode 600")

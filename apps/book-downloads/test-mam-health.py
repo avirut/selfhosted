@@ -2,6 +2,7 @@ import importlib.util
 import json
 from pathlib import Path
 import tempfile
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -55,7 +56,8 @@ class AccountHealthTests(unittest.TestCase):
             snapshot = Path(temporary) / "health.json"
             cookie.write_text("private-cookie")
             cookie.chmod(0o600)
-            snapshot.write_text(json.dumps({"status": "ok", "ratio": 3}))
+            snapshot.write_text(json.dumps({"status": "ok", "ratio": 3,
+                                            "checkedAt": "2020-01-01T00:00:00+00:00"}))
             response = SimpleNamespace(returncode=1, stdout="private-cookie", stderr="private-cookie")
             with patch.object(health, "COOKIE", cookie), patch.object(health, "SNAPSHOT", snapshot), patch.object(health.subprocess, "run", return_value=response), patch("builtins.print"):
                 self.assertEqual(health.main(), 1)
@@ -63,6 +65,41 @@ class AccountHealthTests(unittest.TestCase):
             self.assertEqual(saved["status"], "error")
             self.assertEqual(saved["lastSuccessfulCheck"]["ratio"], 3)
             self.assertNotIn("private-cookie", snapshot.read_text())
+
+    def test_daily_limit_survives_failure_and_does_not_overwrite_snapshot(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            cookie = Path(temporary) / "cookie"
+            snapshot = Path(temporary) / "health.json"
+            cookie.write_text("private-cookie")
+            cookie.chmod(0o600)
+            response = SimpleNamespace(returncode=1, stdout="", stderr="")
+            with patch.object(health, "COOKIE", cookie), patch.object(health, "SNAPSHOT", snapshot), patch.object(health.subprocess, "run", return_value=response) as request, patch("builtins.print"):
+                self.assertEqual(health.main(), 1)
+                saved = snapshot.read_text()
+                self.assertEqual(health.main(), 0)
+                self.assertEqual(snapshot.read_text(), saved)
+                self.assertEqual(request.call_count, 1)
+            self.assertEqual(snapshot.with_name("mam-health-attempt.json").stat().st_mode & 0o777, 0o600)
+
+    def test_upgrade_and_restart_keep_a_full_day_between_attempts(self):
+        now = datetime(2026, 10, 7, 20, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as temporary:
+            snapshot = Path(temporary) / "health.json"
+            snapshot.write_text(json.dumps({"checkedAt": now.isoformat()}))
+            with patch.object(health, "SNAPSHOT", snapshot):
+                self.assertFalse(health.reserve_attempt(now + timedelta(hours=23, minutes=59)))
+                self.assertTrue(health.reserve_attempt(now + timedelta(hours=24)))
+                self.assertFalse(health.reserve_attempt(now + timedelta(hours=30)))
+                self.assertFalse(health.reserve_attempt(now - timedelta(hours=1)))
+                self.assertTrue(health.reserve_attempt(now + timedelta(hours=48)))
+
+    def test_invalid_timestamp_does_not_allow_a_request(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            snapshot = Path(temporary) / "health.json"
+            snapshot.write_text('{"checkedAt":"invalid"}')
+            with patch.object(health, "SNAPSHOT", snapshot), patch.object(health.subprocess, "run") as request, patch("builtins.print"):
+                self.assertEqual(health.main(), 1)
+                request.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,11 @@
 [Unit]
-Description=Check MAM account health hourly
+Description=Check MAM account health at randomized daily intervals
 
 [Timer]
-OnBootSec=10min
-OnUnitInactiveSec=1h
+OnBootSec=24h
+OnUnitInactiveSec=24h
+RandomizedDelaySec=12h
+FixedRandomDelay=no
 Unit=mam-health.service
 
 [Install]
