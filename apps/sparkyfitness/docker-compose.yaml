@@ -1,6 +1,6 @@
 services:
   sparkyfitness:
-    image: codewithcj/sparkyfitness:v1.7.2
+    image: codewithcj/sparkyfitness:v1.8.0@sha256:d67af4087e9bb3ca8c462225c0bba7a83517dfe404aa9e347885fd6d2a4f5d4c
     container_name: sparkyfitness
     restart: unless-stopped
     environment:
@@ -29,7 +29,7 @@ services:
         max-file: "3"
 
   sparkyfitness-server:
-    image: codewithcj/sparkyfitness_server:v1.7.2
+    image: codewithcj/sparkyfitness_server:v1.8.0@sha256:001f173ef46aeb40882516a5f14db73180517b051a82e551c98db48b9263d9e6
     container_name: sparkyfitness-server
     restart: unless-stopped
     env_file:
@@ -60,7 +60,7 @@ services:
         max-file: "3"
 
   sparkyfitness-db:
-    image: postgres:18-alpine
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
     container_name: sparkyfitness-db
     restart: unless-stopped
     environment:
