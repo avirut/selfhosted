@@ -1,5 +1,7 @@
 web.example.com {
     route {
+        header Cache-Control "private, no-store"
+        header X-Content-Type-Options nosniff
         request_header -X-Authentik-Username
         reverse_proxy /outpost.goauthentik.io/* http://authentik:9000
         forward_auth http://authentik:9000 {
@@ -8,6 +10,15 @@ web.example.com {
         }
         @notOwner not header X-Authentik-Username OWNER_USERNAME
         respond @notOwner "This application is private." 403
-        reverse_proxy unix//config/paseo-web.sock
+        @daemon path /api /api/* /ws /mcp /mcp/* /public /public/*
+        reverse_proxy @daemon unix//config/paseo-web.sock
+        root * /config/paseo-web-ui/current
+        handle /_kroacnet/* {
+            file_server
+        }
+        try_files {path} /index.html
+        file_server {
+            precompressed br gzip
+        }
     }
 }
