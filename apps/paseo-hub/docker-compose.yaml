@@ -1,0 +1,47 @@
+name: paseo-hub
+
+services:
+  paseo-hub-db:
+    image: postgres:17-alpine
+    container_name: paseo-hub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paseo_hub
+      POSTGRES_USER: paseo
+      POSTGRES_PASSWORD: ${PASEO_HUB_DB_PASSWORD:?Set PASEO_HUB_DB_PASSWORD in .env}
+    volumes:
+      - ~/selfhosted/data/paseo-hub/postgres:/var/lib/postgresql/data
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U paseo -d paseo_hub]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  paseo-hub:
+    image: ghcr.io/getpaseo/hub@sha256:090d987c6d1d163f5492439dd9150233c17a8d16fc6d6c5f4e1a570f93a12b88
+    container_name: paseo-hub
+    restart: unless-stopped
+    depends_on:
+      paseo-hub-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://paseo:${PASEO_HUB_DB_PASSWORD:?Set PASEO_HUB_DB_PASSWORD in .env}@paseo-hub-db:5432/paseo_hub
+      PORT: 3000
+      PASEO_HUB_APP_URL: ${PASEO_HUB_APP_URL:?Set PASEO_HUB_APP_URL in .env}
+      PASEO_HUB_TRUSTED_CLIENT_IP_HEADER: x-forwarded-for
+      PASEO_REGISTRATION_MODE: invite_only
+      PASEO_ORGANIZATION_CREATION: disabled
+    networks: [database, swarmnet]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+networks:
+  database:
+    internal: true
+  swarmnet:
+    external: true

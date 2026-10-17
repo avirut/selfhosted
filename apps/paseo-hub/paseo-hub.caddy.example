@@ -1,0 +1,13 @@
+hub.example.com {
+    route {
+        request_header -X-Authentik-Username
+        reverse_proxy /outpost.goauthentik.io/* http://authentik:9000
+        forward_auth http://authentik:9000 {
+            uri /outpost.goauthentik.io/auth/caddy
+            copy_headers X-Authentik-Username
+        }
+        @notOwner not header X-Authentik-Username OWNER_USERNAME
+        respond @notOwner "This application is private." 403
+        reverse_proxy paseo-hub:3000
+    }
+}
