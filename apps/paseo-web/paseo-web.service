@@ -1,0 +1,11 @@
+[Unit]
+Description=Forward the private Paseo web socket to the local daemon
+Requires=paseo.service
+After=paseo.service
+
+[Service]
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:6767
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only

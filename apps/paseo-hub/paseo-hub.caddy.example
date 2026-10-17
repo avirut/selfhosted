@@ -12,6 +12,11 @@ hub.example.com {
             path /api/daemons/socket
         }
         reverse_proxy @hubSocket paseo-hub:3000
+        @hubRelationship {
+            method PATCH DELETE
+            path_regexp hubRelationship ^/api/daemons/[0-9a-f-]{36}$
+        }
+        reverse_proxy @hubRelationship paseo-hub:3000
         reverse_proxy /outpost.goauthentik.io/* http://authentik:9000
         forward_auth http://authentik:9000 {
             uri /outpost.goauthentik.io/auth/caddy
