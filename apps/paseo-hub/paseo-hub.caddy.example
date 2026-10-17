@@ -1,6 +1,17 @@
 hub.example.com {
     route {
         request_header -X-Authentik-Username
+        # Native CLI/device credentials authenticate these machine endpoints.
+        @hubCli {
+            method POST
+            path /api/v1/cli-authorizations /api/v1/cli-authorizations/poll /api/v1/daemons/enrollment-tokens /api/daemons/enroll
+        }
+        reverse_proxy @hubCli paseo-hub:3000
+        @hubSocket {
+            method GET
+            path /api/daemons/socket
+        }
+        reverse_proxy @hubSocket paseo-hub:3000
         reverse_proxy /outpost.goauthentik.io/* http://authentik:9000
         forward_auth http://authentik:9000 {
             uri /outpost.goauthentik.io/auth/caddy
