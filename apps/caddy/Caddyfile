@@ -109,7 +109,18 @@ arr.kroac.net {
     reverse_proxy /radarr* radarr:7878
     reverse_proxy /prowlarr* prowlarr:9696
     reverse_proxy /bazarr* bazarr:6767
-    reverse_proxy homarr:7575
+    @appLinks not path /outpost.goauthentik.io/* /qbt* /autobrr* /sabnzbd* /sonarr* /radarr* /prowlarr* /bazarr*
+    handle @appLinks {
+        root * /config/app-links
+        try_files {path} /index.html
+        header {
+            Content-Security-Policy "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+            X-Content-Type-Options nosniff
+            Referrer-Policy no-referrer
+            Cache-Control no-store
+        }
+        file_server
+    }
 }
 
 seerr.kroac.net {
