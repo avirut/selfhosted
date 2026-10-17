@@ -1,6 +1,6 @@
 services:
   static-file-server:
-    image: halverneus/static-file-server:v1.8.11
+    image: halverneus/static-file-server:v1.8.12@sha256:48c3f4139614c377ad9f29273c465c04671a338a296d40e0ebee626178800072
     container_name: static-file-server
     restart: unless-stopped
     volumes:
