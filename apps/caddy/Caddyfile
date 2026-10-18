@@ -67,7 +67,7 @@ actual.kroac.net {
 }
 
 termix.kroac.net {
-    reverse_proxy termix:8080
+    respond "Retired" 410
 }
 
 jellyfin.kroac.net {

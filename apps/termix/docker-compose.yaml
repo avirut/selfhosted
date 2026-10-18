@@ -1,5 +1,6 @@
 services:
   termix:
+    profiles: [retired]
     image: ghcr.io/lukegus/termix:release-1.8.0
     container_name: termix
     restart: unless-stopped
