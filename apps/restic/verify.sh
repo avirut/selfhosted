@@ -19,8 +19,9 @@ for host in skepsis sophon-media sophon-gpu sophon ambrosia.local chrysaora; do
         id=$(jq -r --arg h "$host" --arg p "$profile" '[.[] | select(.hostname == $h and (.tags // [] | index($p)))] | max_by(.time) | .id // empty' "$work/snapshots.json")
         [[ $id ]] || { echo "Missing $host/$profile" >&2; exit 1; }
         restic ls --json "$id" > "$work/files.jsonl"
-        # Keep the scheduled read bounded, including a SQLite snapshot where available.
-        jq -rs '[.[] | select(.type == "file" and .size > 0 and .size < 2097152)] | ([.[] | select(.path | test("\\.(sqlite|db)$"))][0:1] + [.[] | select(.path | test("\\.json$"))][0:1] + [.[] | select(.path | endswith("/prepared-at"))][0:1]) | .[].path' "$work/files.jsonl" > "$work/selection"
+        # Use known runtime stores, not authored test fixtures or JSON-with-comments.
+        # Each Linux/Mac set also has prepared-at; Windows has its root manifest.
+        jq -rs '[.[] | select(.type == "file" and .size > 0 and .size < 2097152 and (.path | contains("/worktree/") | not))] | ([.[] | select(.path | test("/(state_5\\.sqlite|access\\.db|config\\.db)$"))][0:1] + [.[] | select(.path | test("/\\.paseo/config\\.json$|/sunshine/apps\\.json$|^/payload/manifest\\.json$"))][0:1] + [.[] | select(.path | endswith("/prepared-at"))][0:1]) | .[].path' "$work/files.jsonl" > "$work/selection"
         [[ -s $work/selection ]] || { echo 'No verification sample found' >&2; exit 1; }
         args=()
         while IFS= read -r path; do args+=(--include "$path"); done < "$work/selection"
