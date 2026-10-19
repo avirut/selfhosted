@@ -68,9 +68,9 @@ sqlite_export() {
     if (( EUID == 0 )); then chown "$uid:$gid" "$scratch"; fi
     qdst=${scratch//\'/\'\'}
     if (( EUID == 0 && uid != 0 )); then
-        "$TIMEOUT" 120s setpriv --reuid="$uid" --regid="$gid" --clear-groups "$SQLITE" -batch -bail -readonly "$src" ".timeout 1500" ".backup '$qdst/database.sqlite'" || { rm -rf "$scratch"; fail 'SQLite online backup failed'; }
+        "$TIMEOUT" 120s setpriv --reuid="$uid" --regid="$gid" --clear-groups "$SQLITE" -init /dev/null -batch -bail -readonly "$src" ".timeout 1500" 'BEGIN; SELECT count(*) FROM sqlite_schema;' ".backup '$qdst/database.sqlite'" 'ROLLBACK;' || { rm -rf "$scratch"; fail 'SQLite online backup failed'; }
     else
-        "$TIMEOUT" 120s "$SQLITE" -batch -bail -readonly "$src" ".timeout 1500" ".backup '$qdst/database.sqlite'" || { rm -rf "$scratch"; fail 'SQLite online backup failed'; }
+        "$TIMEOUT" 120s "$SQLITE" -init /dev/null -batch -bail -readonly "$src" ".timeout 1500" 'BEGIN; SELECT count(*) FROM sqlite_schema;' ".backup '$qdst/database.sqlite'" 'ROLLBACK;' || { rm -rf "$scratch"; fail 'SQLite online backup failed'; }
     fi
     [[ $("$SQLITE" -batch -bail "$scratch/database.sqlite" 'PRAGMA integrity_check;') == ok ]] || { rm -rf "$scratch"; fail 'SQLite integrity check failed'; }
     cp "$scratch/database.sqlite" "$dst"

@@ -154,7 +154,11 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
         Write-JsonAtomic ([IO.Path]::Combine($payload,'manifest.json')) $manifest
         Write-JsonAtomic ([IO.Path]::Combine($pending,'ready.json')) @{run_id=$manifest.run_id;manifest_sha256=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}
         return [pscustomobject]@{RunId=$manifest.run_id;Files=$files.Count;Bytes=$total;Payload=$payload;ManifestHash=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}
-    } catch { Remove-OwnedPending $Stage; throw }
+    } catch {
+        $originalError=$_
+        try { Remove-OwnedPending $Stage } catch {}
+        throw $originalError
+    }
     finally { $script:Deadline=$null }
 }
 function Assert-PreparedPayload($Prepared) {
