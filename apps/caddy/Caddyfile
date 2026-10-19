@@ -84,6 +84,7 @@ storyteller.kroac.net {
 }
 
 shelfmark.kroac.net {
+        import authentik *
         reverse_proxy books-gluetun:8084
 }
 
