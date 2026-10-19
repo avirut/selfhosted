@@ -7,6 +7,8 @@ flock -w 300 9
 # Do not prune if any required set lacks a current successful recovery point.
 "$SCRIPT_DIR/list-snapshots.sh" "$1" --json > /var/lib/kroacnet-backup/snapshots.json
 now=$(date +%s)
+restored=$(cat /var/lib/kroacnet-backup/restore-success)
+(( now - $(date -d "$restored" +%s) < 3456000 )) || { echo 'Restore verification is stale' >&2; exit 1; }
 for host in skepsis sophon-media sophon-gpu sophon ambrosia.local chrysaora; do
     latest=$(jq -r --arg h "$host" '[.[] | select(.hostname == $h and (.tags // [] | index("apps")))] | max_by(.time) | .time // empty' /var/lib/kroacnet-backup/snapshots.json)
     [[ $latest ]] || { echo "No apps snapshot for $host" >&2; exit 1; }

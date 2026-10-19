@@ -14,7 +14,7 @@ Git (`chmod 600 selfhosted.env`). These commands work on a fresh machine:
 
 All scripts directly call Restic. `common.sh` only loads the env file. Listing
 shows every device by default; there is one shared repository and password.
-`remove-old.sh` runs forget with 14 daily, 8 weekly, 12 monthly and 3 yearly points,
+`remove-old.sh` keeps all points from the latest48hours plus14 daily,8 weekly,12 monthly and3 yearly points,
 grouped independently by host and tag. Add `--prune` to reclaim unreferenced data.
 Only Skepsis schedules repository maintenance. Snapshots share unchanged content
 across devices; different paths and hosts still share identical content chunks.
@@ -40,6 +40,9 @@ Embral03:10 daily. All times America/Chicago. Native client times are documented
 with their installed job definitions. Weekly maintenance on Skepsis is Sunday
 05:30; clients use Restic's repository lock retry when maintenance is active.
 Freshness monitoring uses the shared catalogue and the existing QM owner outbox.
+Monthly verify.sh restores small settings/SQLite samples from every host and set;
+this is a bounded recovery check, not a full application rebuild. PostgreSQL
+restore acceptance uses an isolated matching-version server during migration.
 
 Stages are separate on-disk copies. They provide consistent database exports,
 not a global atomic transaction across applications. A failed preparation cannot

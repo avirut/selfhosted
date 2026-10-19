@@ -1,0 +1,10 @@
+[Unit]
+Description=Restore and inspect samples from every backup set
+After=network-online.target
+OnFailure=restic-monitor.service
+[Service]
+Type=oneshot
+ExecStart=/opt/kroacnet-backup/verify.sh /etc/kroacnet-backup/selfhosted.env
+TimeoutStartSec=90min
+UMask=0077
+Nice=15
