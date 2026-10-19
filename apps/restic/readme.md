@@ -99,7 +99,9 @@ Windows source repositories are stored as `ALIAS/worktree/` plus `ALIAS/git/`.
 The latter contains a Git bundle of refs/history (including reflog history),
 an additional pack of staged objects, exact index/control files and recovery
 metadata. Background fetch bookkeeping can change without invalidating a backup;
-local refs, index, HEAD and selected working files must stay stable. This keeps
+local refs, index, HEAD and selected working files must stay stable during that
+repository's own capture. Its interval is recorded in the manifest; later edits
+during other stores' captures do not invalidate the verified copy. This keeps
 unpublished branches, stashes, staged changes and untracked source recoverable.
 
 For source recovery, verify the enclosing manifest and initialize an **empty**

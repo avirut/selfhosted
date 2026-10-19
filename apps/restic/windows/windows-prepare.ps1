@@ -98,6 +98,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
     Remove-OwnedPending $Stage
     $files=[Collections.Generic.List[object]]::new(); $aliases=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $sources=@($config.sources); $guards=@{}; $gitStates=@{}; $inventories=@{}; $missing=[Collections.Generic.List[string]]::new()
+    $gitCuts=[Collections.Generic.List[object]]::new()
     foreach ($source in $sources) {
         $alias=[string]$source.alias
         if ($alias -notmatch '^[A-Za-z0-9_. -]+(/[A-Za-z0-9_. -]+)*$' -or @($alias.Split('/') | Where-Object {$_ -in @('.','..')}).Count -or $alias -eq 'manifest.json') { throw 'invalid_alias' }
@@ -106,15 +107,12 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
         $root=Assert-PlainPath $source.path
         $stageFull=Assert-PlainPath $Stage
         if ($root -eq $stageFull -or $root.StartsWith($stageFull+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'staging_source_overlap' }
-        $list=@(Get-PreparedInventory $source)
-        foreach ($file in $list) { if ($file.Path.StartsWith($stageFull+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'staging_source_overlap' } }
-        $inventories[$alias]=$list
         if (-not (Test-Path -LiteralPath $root)) { $missing.Add($alias) }
         $git=($source.PSObject.Properties.Name -contains 'git_root') -and $source.git_root
-        if ($git) {
-            if (-not [IO.Directory]::Exists([IO.Path]::Combine($root,'.git'))) { throw 'git_control_directory_missing' }
-            $guards[$alias]=Get-TreeGuard $source
-            $gitStates[$alias]=Get-GitLocalState $root
+        if (-not $git) {
+            $list=@(Get-PreparedInventory $source)
+            foreach ($file in $list) { if ($file.Path.StartsWith($stageFull+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'staging_source_overlap' } }
+            $inventories[$alias]=$list
         }
     }
     $pending=[IO.Path]::Combine($Stage,'pending'); New-PrivateDirectory $pending
@@ -124,6 +122,16 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
         foreach ($source in $sources) {
             $opaque=($source.PSObject.Properties.Name -contains 'git_root') -and $source.git_root
             if ($opaque) {
+                # Each repository has its own guarded capture interval. Later
+                # source changes cannot invalidate its verified staged bytes.
+                $captureStarted=[DateTime]::UtcNow.ToString('o')
+                $list=@(Get-PreparedInventory $source)
+                foreach ($file in $list) { if ($file.Path.StartsWith($stageFull+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'staging_source_overlap' } }
+                $inventories[$source.alias]=$list
+                $guards[$source.alias]=Get-TreeGuard $source
+                if ($list.Count -ne $guards[$source.alias].Count) { throw 'repository_changed' }
+                foreach ($file in $list) { if (-not $guards[$source.alias].ContainsKey($file.Relative)) { throw 'repository_changed' } }
+                $gitStates[$source.alias]=Get-GitLocalState $source.path
                 $destination=[IO.Path]::Combine($payload,($source.alias+'/git').Replace('/','\'))
                 $gitFiles=@(Export-GitLogical $gitStates[$source.alias] $destination $config.limits $Sqlite)
                 foreach ($f in $gitFiles) {
@@ -151,13 +159,14 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
                     if ($record.sha256 -cne $expected) { throw 'repository_changed' }
                 }
             }
-        }
-        foreach ($source in $sources) {
-            if ($guards.ContainsKey($source.alias)) {
+            if ($opaque) {
                 Assert-TreeEqual $guards[$source.alias] (Get-TreeGuard $source)
                 Assert-GitLocalEqual $gitStates[$source.alias] (Get-GitLocalState $source.path)
+                $gitCuts.Add([pscustomobject]@{alias=$source.alias;capture_started_utc=$captureStarted;validated_utc=[DateTime]::UtcNow.ToString('o');head=$gitStates[$source.alias].Head;working_files=$inventories[$source.alias].Count})
             }
-            else {
+        }
+        foreach ($source in $sources) {
+            if (-not $guards.ContainsKey($source.alias)) {
                 $before=@($inventories[$source.alias] | ForEach-Object {$_.Relative} | Sort-Object)
                 $after=@(Get-PreparedInventory $source | ForEach-Object {$_.Relative} | Sort-Object)
                 if (($before -join "`n") -cne ($after -join "`n")) { throw 'source_inventory_changed' }
@@ -168,7 +177,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
             Test-Deadline
             if ((Get-Hash ([IO.Path]::Combine($payload,$file.path.Replace('/','\')))) -cne $file.sha256) { throw 'staged_hash_mismatch' }
         }
-        $manifest=[ordered]@{schema=1;host='chrysaora';run_id=[Guid]::NewGuid().ToString();prepared_utc=[DateTime]::UtcNow.ToString('o');config_sha256=$configHash;source_count=$sources.Count;git_representation='git-bundle-index-v1';optional_missing=@($missing);files=@($files.ToArray());file_count=$files.Count;payload_bytes=$total;browser_preferences='excluded_unavailable'}
+        $manifest=[ordered]@{schema=1;host='chrysaora';run_id=[Guid]::NewGuid().ToString();prepared_utc=[DateTime]::UtcNow.ToString('o');config_sha256=$configHash;source_count=$sources.Count;git_representation='git-bundle-index-v1';git_cuts=@($gitCuts.ToArray());optional_missing=@($missing);files=@($files.ToArray());file_count=$files.Count;payload_bytes=$total;browser_preferences='excluded_unavailable'}
         Write-JsonAtomic ([IO.Path]::Combine($payload,'manifest.json')) $manifest
         Write-JsonAtomic ([IO.Path]::Combine($pending,'ready.json')) @{run_id=$manifest.run_id;manifest_sha256=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}
         return [pscustomobject]@{RunId=$manifest.run_id;Files=$files.Count;Bytes=$total;Payload=$payload;ManifestHash=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}

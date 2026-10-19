@@ -1,4 +1,4 @@
-param([string]$Sqlite='C:\ProgramData\KroacnetBackup\bin\sqlite3.exe')
+param([string]$Sqlite='C:\ProgramData\KroacnetBackup\bin\sqlite3.exe',[string]$Restic='C:\ProgramData\KroacnetBackup\bin\restic.exe')
 . "$PSScriptRoot\windows-prepare.ps1"
 $fixture=Join-Path $PSScriptRoot ('git-fixture-'+[Guid]::NewGuid().ToString('N'))
 New-PrivateDirectory $fixture
@@ -114,6 +114,98 @@ Assert-Test ((Get-Hash (Join-Path $restore '.git\index')) -ceq (Get-Hash (Join-P
 Assert-Test ((Get-Hash (Join-Path $restore '.git\config')) -ceq (Get-Hash (Join-Path $script:Repo '.git\config')) -and (Get-Hash (Join-Path $restore '.git\info\exclude')) -ceq (Get-Hash (Join-Path $script:Repo '.git\info\exclude'))) 'local config/exclude exact'
 $null=Invoke-BackupGit $restore @('fsck','--full','--no-dangling')
 Assert-Test $true 'restored history/index/reflogs pass full Git fsck'
+
+# A later independent source may be copied after this repository has changed.
+# Commit/HEAD/index/working changes are injected ONLY when runtime/settings.json
+# starts copying, after the repository's own cut has already been validated.
+$cutHead=(G @('rev-parse','HEAD')).Trim()
+$cutStatus=G @('status','--porcelain=v1','-z','--untracked-files=all')
+$cutDiff=G @('diff','--cached','--binary','--no-ext-diff','--no-textconv')
+$cutIndex=Get-Hash (Join-Path $script:Repo '.git\index')
+$cutWorking=Get-Hash (Join-Path $script:Repo 'tracked.txt')
+$script:OriginalCopy=${function:Copy-PreparedFile}; $script:AfterCutUTC=$null
+function Copy-PreparedFile([string]$Path,[string]$Target,[bool]$Opaque,$Limits,[string]$Sqlite) {
+    if ($Path -eq (Join-Path $runtime 'settings.json') -and -not $script:AfterCutUTC) {
+        $script:AfterCutUTC=[DateTime]::UtcNow.ToString('o')
+        Put (Join-Path $script:Repo 'tracked.txt') "later committed content`n"
+        $null=G @('add','--','tracked.txt'); $null=G @('commit','-m','after repository cut')
+        Put (Join-Path $script:Repo 'untracked.txt') "later untracked content`n"
+    }
+    & $script:OriginalCopy $Path $Target $Opaque $Limits $Sqlite
+}
+try { $cutPrepared=Invoke-WindowsPrepare $configPath $stage $Sqlite }
+finally { Set-Item -Path function:Copy-PreparedFile -Value $script:OriginalCopy }
+Assert-Test ($script:AfterCutUTC -and (G @('rev-parse','HEAD')).Trim() -cne $cutHead) 'later runtime copy really committed local branch after Git cut'
+Assert-PreparedPayload $cutPrepared
+$cutManifest=Get-Content -LiteralPath (Join-Path $cutPrepared.Payload 'manifest.json') -Raw | ConvertFrom-Json
+Assert-Test ($cutManifest.git_cuts.Count -eq 1 -and $cutManifest.git_cuts[0].alias -ceq 'sources/test' -and $cutManifest.git_cuts[0].head -ceq $cutHead -and [DateTime]$cutManifest.git_cuts[0].validated_utc -le [DateTime]$script:AfterCutUTC -and [DateTime]$cutManifest.git_cuts[0].capture_started_utc -le [DateTime]$cutManifest.git_cuts[0].validated_utc) 'manifest records earlier individual repository cut'
+Assert-Test ((Get-Hash (Join-Path $cutPrepared.Payload 'sources\test\worktree\tracked.txt')) -ceq $cutWorking) 'completed cut retains earlier working bytes'
+$cutLocalRepo=Join-Path $fixture 'cut-restic-repository'
+$cutEnv=@{RESTIC_REPOSITORY=$cutLocalRepo;RESTIC_PASSWORD='synthetic-cut-password-only'}
+$r=Invoke-Native $Restic @('--json','--no-cache','init') '' 30 $cutEnv
+Assert-Test ($r.Exit -eq 0) 'cut fixture local Restic repository initialized'
+$r=Invoke-Native $Restic @('--json','--no-cache','backup','--host','chrysaora','--tag','apps','--','payload') '' 60 $cutEnv ([IO.Path]::GetDirectoryName($cutPrepared.Payload))
+Assert-Test ($r.Exit -eq 0 -and $r.Out -match '"snapshot_id"') 'generation uploads earlier coherent cut to local-only Restic'
+$archiveRestore=Join-Path $fixture 'cut-archive-restored'
+$r=Invoke-Native $Restic @('--no-cache','restore','latest','--target',$archiveRestore) '' 60 $cutEnv
+Assert-Test ($r.Exit -eq 0) 'post-cut-change archive restored in isolation'
+$restoredManifest=@(Get-ChildItem -LiteralPath $archiveRestore -Recurse -File -Filter 'manifest.json')
+Assert-Test ($restoredManifest.Count -eq 1 -and (Get-Hash $restoredManifest[0].FullName) -ceq $cutPrepared.ManifestHash) 'restored cut manifest matches generation'
+$restoredPayload=$restoredManifest[0].DirectoryName
+$restoredCut=Join-Path $restoredPayload 'sources\test'
+$gitCut=Join-Path $restoredCut 'git'
+foreach ($file in $cutManifest.files) {
+    if ((Get-Hash (Join-Path $restoredPayload $file.path.Replace('/','\'))) -cne $file.sha256) { throw 'restored_cut_hash_mismatch' }
+}
+Assert-Test $true 'all restored archive bytes match cut manifest'
+$cutRestore=Join-Path $fixture 'cut-reconstructed'; New-PrivateDirectory $cutRestore
+$cutRecovery=Get-Content -LiteralPath (Join-Path $gitCut 'recovery.json') -Raw | ConvertFrom-Json
+$null=Invoke-BackupGit $cutRestore @('init',('--object-format='+$cutRecovery.object_format),'--initial-branch=main')
+$null=Invoke-BackupGit $cutRestore @('bundle','verify',(Join-Path $gitCut 'history.bundle'))
+$heads=Invoke-BackupGit $cutRestore @('bundle','unbundle',(Join-Path $gitCut 'history.bundle'))
+foreach ($line in ($heads -split "`n")) {
+    if ($line -match '^([0-9a-f]{40,64}) (refs/[^\s]+)\s*$') { $null=Invoke-BackupGit $cutRestore @('update-ref',$Matches[2],$Matches[1]) }
+}
+foreach ($ref in $cutRecovery.local_refs) { if ($ref.symref) { $null=Invoke-BackupGit $cutRestore @('symbolic-ref',$ref.name,$ref.symref) } }
+foreach ($f in Get-ChildItem -LiteralPath $gitCut -File -Filter 'index-objects-*') {
+    Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $cutRestore ('.git\objects\pack\'+$f.Name.Replace('index-objects-','pack-')))
+}
+foreach ($f in @(Get-SourceFiles ([pscustomobject]@{path=(Join-Path $gitCut 'control');required=$true;excludes=@()}))) {
+    $target=Join-Path $cutRestore ('.git\'+$f.Relative.Replace('/','\')); $null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)); Copy-Item -LiteralPath $f.Path -Destination $target
+}
+foreach ($f in @(Get-SourceFiles ([pscustomobject]@{path=(Join-Path $restoredCut 'worktree');required=$true;excludes=@()}))) {
+    $target=Join-Path $cutRestore $f.Relative.Replace('/','\'); $null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)); Copy-Item -LiteralPath $f.Path -Destination $target
+}
+Assert-Test ((Invoke-BackupGit $cutRestore @('rev-parse','HEAD')).Trim() -ceq $cutHead) 'archive reconstructs earlier HEAD and branch despite later commit'
+Assert-Test ((Get-Hash (Join-Path $cutRestore '.git\index')) -ceq $cutIndex -and (Invoke-BackupGit $cutRestore @('diff','--cached','--binary','--no-ext-diff','--no-textconv')) -ceq $cutDiff) 'archive reconstructs earlier index and staged state'
+Assert-Test ((Get-Hash (Join-Path $cutRestore 'tracked.txt')) -ceq $cutWorking -and (Invoke-BackupGit $cutRestore @('status','--porcelain=v1','-z','--untracked-files=all')) -ceq $cutStatus) 'archive reconstructs earlier working and untracked state'
+$null=Invoke-BackupGit $cutRestore @('fsck','--full','--no-dangling')
+Assert-Test $true 'reconstructed earlier cut passes full Git fsck'
+[IO.File]::AppendAllText((Join-Path $cutPrepared.Payload 'sources\test\git\history.bundle'),'tampered',$script:Utf8)
+Expect-Refusal { Assert-PreparedPayload $cutPrepared } 'payload_changed' 'completed Git cut still refuses staged hash tampering'
+
+# End-to-end per-repository guards still refuse mutations INSIDE capture,
+# injected immediately after one working file is copied, before its final guard.
+foreach ($script:InsideMode in @('ref','work','index','head')) {
+    $script:InsideChanged=$false
+    function Copy-PreparedFile([string]$Path,[string]$Target,[bool]$Opaque,$Limits,[string]$Sqlite) {
+        $result=& $script:OriginalCopy $Path $Target $Opaque $Limits $Sqlite
+        if (-not $script:InsideChanged -and $Path -eq (Join-Path $script:Repo 'tracked.txt')) {
+            $script:InsideChanged=$true
+            switch ($script:InsideMode) {
+                'ref' { $null=G @('update-ref','refs/heads/inside-cut',$base) }
+                'work' { Put (Join-Path $script:Repo 'tracked.txt') 'inside capture working mutation' }
+                'index' { $null=G @('add','--','untracked.txt') }
+                'head' { $null=G @('update-ref','--no-deref','HEAD',$topic) }
+            }
+        }
+        return $result
+    }
+    try { Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'repository_changed' ('inside capture '+$script:InsideMode+' mutation refused') }
+    finally { Set-Item -Path function:Copy-PreparedFile -Value $script:OriginalCopy }
+    Assert-Test ($script:InsideChanged -and -not (Test-Path -LiteralPath (Join-Path $stage 'pending\ready.json'))) ('inside capture '+$script:InsideMode+' mutation leaves no ready generation')
+}
+$null=G @('symbolic-ref','HEAD','refs/heads/main')
 
 # Mutations must refuse; each change occurs only in this disposable fixture.
 $saved=Get-GitLocalState $script:Repo

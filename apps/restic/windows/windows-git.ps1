@@ -34,8 +34,11 @@ Recovery is an explicit offline operator procedure, NOT part of daily backup:
      excluded. Other registered worktrees' unselected working files are not added.
 
 Background remote-ref/reflog/FETCH_HEAD/pack maintenance changes are not compared.
-Local refs (including tags/stash/custom refs), local reflogs, HEAD/index/config,
-selected files and exported bytes MUST remain stable throughout preparation.
+Local refs (including tags/stash/custom refs), local reflogs, HEAD/index/config
+and selected files MUST remain stable during THAT repository's capture interval.
+The enclosing manifest's git_cuts records its start and validation time. Later
+source changes during other stores' captures are outside that repository's cut;
+all staged bytes still undergo hash validation through upload.
 Locks/FETCH_HEAD/remote reflogs/raw object storage are never copied.
 Linked-worktree roots, shallow/promisor/reftable layouts, unborn HEAD and active
 merge/rebase/cherry-pick/revert states fail closed; no auto-repair/network fetch.
