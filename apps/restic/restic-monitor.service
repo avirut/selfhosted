@@ -3,6 +3,7 @@ Description=Check shared backup freshness
 After=network-online.target
 [Service]
 Type=oneshot
+Environment=RESTIC_CACHE_DIR=/var/lib/kroacnet-backup/cache
 ExecStart=/opt/kroacnet-backup/monitor.sh /etc/kroacnet-backup/selfhosted.env
 TimeoutStartSec=5min
 UMask=0077

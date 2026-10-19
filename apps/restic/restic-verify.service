@@ -4,6 +4,7 @@ After=network-online.target
 OnFailure=restic-monitor.service
 [Service]
 Type=oneshot
+Environment=RESTIC_CACHE_DIR=/var/lib/kroacnet-backup/cache
 ExecStart=/opt/kroacnet-backup/verify.sh /etc/kroacnet-backup/selfhosted.env
 TimeoutStartSec=90min
 UMask=0077
