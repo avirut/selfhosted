@@ -1,1 +1,0 @@
-echo "Read the restic documentation to learn how to restore files from a snapshot: https://restic.readthedocs.io/en/stable/050_restore.html"
