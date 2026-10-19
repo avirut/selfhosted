@@ -99,6 +99,16 @@ arr.kroac.net {
             }
         }
     }
+    handle /books-qbt* {
+        redir /books-qbt /books-qbt/
+        handle_path /books-qbt/* {
+            reverse_proxy books-gluetun:8080 {
+                header_up Host books-gluetun:8080
+                header_up -Origin
+                header_up -Referer
+            }
+        }
+    }
     handle /autobrr* {
         redir /autobrr /autobrr/
         uri strip_prefix /autobrr
@@ -109,7 +119,7 @@ arr.kroac.net {
     reverse_proxy /radarr* radarr:7878
     reverse_proxy /prowlarr* prowlarr:9696
     reverse_proxy /bazarr* bazarr:6767
-    @appLinks not path /outpost.goauthentik.io/* /qbt* /autobrr* /sabnzbd* /sonarr* /radarr* /prowlarr* /bazarr*
+    @appLinks not path /outpost.goauthentik.io/* /qbt* /books-qbt* /autobrr* /sabnzbd* /sonarr* /radarr* /prowlarr* /bazarr*
     handle @appLinks {
         root * /config/app-links
         try_files {path} /index.html
