@@ -29,8 +29,8 @@ file hashes under `/var/lib/kroacnet-backup/PROFILE/payload`. It excludes live W
 sidecars, caches, downloaded media and models. Mac/Windows are independent daily
 writers; their snapshots are not coupled to Skepsis's apps job.
 
-Preparation uses standard Bash, rsync, sqlite3, jq, shasum and timeout (gtimeout
-on Mac). Linux services run protected installed script copies; root timers never
+Preparation uses standard Bash, rsync, sqlite3, jq and shasum. Linux uses timeout;
+Mac uses a bounded child process with its installed Bash. Linux services run protected installed script copies; root timers never
 execute a user-writable checkout. macOS uses a launchd job as the source owner;
 Windows uses native PowerShell, CLI sqlite3/Restic and Task Scheduler. Source
 credentials and private client settings are not part of this repository.
