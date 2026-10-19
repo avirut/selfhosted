@@ -71,3 +71,30 @@ Keep the env credentials and this recovery procedure available in the owner's
 independent vault. Credentials found only inside their encrypted backup cannot
 bootstrap recovery. The shared storage key allows access to the shared repository;
 normal repository password protection does not provide deletion protection.
+
+## Installing schedules on Linux
+
+Install standard packages (Restic, sqlite3, rsync, jq, coreutils, util-linux and
+shasum), review the matching hosts/HOST.sh source selection, then run:
+
+```sh
+sudo ./install-linux.sh skepsis /private/path/selfhosted.env
+sudo systemctl start restic-backup@apps.service
+sudo systemctl enable --now restic-apps.timer
+```
+
+Use sophon-media, sophon-gpu or sophon for those hosts. Only Skepsis enables
+restic-embral.timer, restic-monitor.timer, restic-maintenance.timer and
+restic-verify.timer. Shared maintenance waits for all seven sets to be fresh and
+for successful restore verification within40days. Never automatically unlock a
+repository. Host mounts and forbidden-root checks must pass before preparation.
+
+On Mac, reviewed hosts/ambrosia.sh plus macos/launcher/plist use the source owner
+and native launchd; on Windows, windows/ scripts and task XML use PowerShell5.1,
+official Restic/SQLite executables and a private56-source JSON allowlist. The
+Windows native allowlist is settings data; no Python installation is needed.
+The native producer removes its private pending payload after confirmed upload.
+
+Skepsis owner terminal export for the vault is recovery-note.sh ENV. Its output
+contains secrets: save it independently and never put it in Git or a chat. It
+only reads the existing single env; it does not create credentials or contact B2.
