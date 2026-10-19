@@ -1,0 +1,528 @@
+{
+    "schema":  1,
+    "host":  "chrysaora",
+    "project_root":  "C:\\Users\\avirut\\Documents\\Projects\\kroacnet",
+    "stage_dir":  "C:\\Users\\avirut\\Documents\\Projects\\kroacnet\\artifacts\\backups\\windows",
+    "limits":  {
+                   "max_files":  40000,
+                   "max_file_bytes":  1073741824,
+                   "max_total_bytes":  8589934592,
+                   "max_json_bytes":  16777216,
+                   "max_jsonl_record_bytes":  33554432,
+                   "timeout_seconds":  480,
+                   "sqlite_timeout_seconds":  60,
+                   "busy_timeout_ms":  1000,
+                   "retries":  2
+               },
+    "sources":  [
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\kroacnet",
+                        "alias":  "sources/kroacnet",
+                        "required":  true,
+                        "excludes":  [
+                                         "node_modules",
+                                         ".pnpm-store",
+                                         ".venv",
+                                         "__pycache__",
+                                         "*.pyc",
+                                         "*.pyo",
+                                         "bin",
+                                         "obj",
+                                         ".vs",
+                                         ".idea",
+                                         "coverage",
+                                         "test-results",
+                                         "playwright-report",
+                                         "*.tsbuildinfo",
+                                         "artifacts",
+                                         "data-dev",
+                                         "app/.svelte-kit",
+                                         "app/build",
+                                         "app/node_modules",
+                                         ".impeccable/mocks",
+                                         ".impeccable/review"
+                                     ],
+                        "git_root":  true
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\okearak",
+                        "alias":  "sources/okearak",
+                        "required":  true,
+                        "excludes":  [
+                                         "node_modules",
+                                         ".pnpm-store",
+                                         ".venv",
+                                         "__pycache__",
+                                         "*.pyc",
+                                         "*.pyo",
+                                         "bin",
+                                         "obj",
+                                         ".vs",
+                                         ".idea",
+                                         "coverage",
+                                         "test-results",
+                                         "playwright-report",
+                                         "*.tsbuildinfo",
+                                         "artifacts",
+                                         "data-dev",
+                                         "ui/dist",
+                                         "server/wwwroot",
+                                         "state",
+                                         "access"
+                                     ],
+                        "git_root":  true
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\okearak\\artifacts\\operations\\calibration-20261017\\web-only-cutover.py",
+                        "alias":  "authored-operations/okearak/calibration-20261017/web-only-cutover.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos",
+                        "alias":  "sources/skyphos",
+                        "required":  true,
+                        "excludes":  [
+                                         "node_modules",
+                                         ".pnpm-store",
+                                         ".venv",
+                                         "__pycache__",
+                                         "*.pyc",
+                                         "*.pyo",
+                                         "bin",
+                                         "obj",
+                                         ".vs",
+                                         ".idea",
+                                         "coverage",
+                                         "test-results",
+                                         "playwright-report",
+                                         "*.tsbuildinfo",
+                                         "artifacts",
+                                         "data-dev",
+                                         "ui/dist",
+                                         "data",
+                                         "assets/sunshine/icons",
+                                         "aqtinstall.log"
+                                     ],
+                        "git_root":  true
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cec-hold-20261017\\apply-managed-fix.ps1",
+                        "alias":  "authored-operations/skyphos/cec-hold-20261017/apply-managed-fix.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\activation-preservation.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/activation-preservation.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\check-source.py",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/check-source.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\consolidate-vacuumtube.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/consolidate-vacuumtube.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\delete-approved.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/delete-approved.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\inventory.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/inventory.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\linux-readonly.py",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/linux-readonly.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\read-status.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/read-status.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\sunshine-readonly-review.py",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/sunshine-readonly-review.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\update-paths.py",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/update-paths.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\verify-cleanup.ps1",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/verify-cleanup.ps1",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Documents\\Projects\\skyphos\\artifacts\\operations\\cleanup-20261017\\write-record.py",
+                        "alias":  "authored-operations/skyphos/cleanup-20261017/write-record.py",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\agents",
+                        "alias":  "paseo/agents",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\projects",
+                        "alias":  "paseo/projects",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\creations",
+                        "alias":  "paseo/creations",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\agent-requests",
+                        "alias":  "paseo/agent-requests",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\schedules",
+                        "alias":  "paseo/schedules",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\config.json",
+                        "alias":  "paseo/config.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\daemon-keypair.json",
+                        "alias":  "paseo/daemon-keypair.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\server-id",
+                        "alias":  "paseo/server-id",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\cli-client-id",
+                        "alias":  "paseo/cli-client-id",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\local-credential",
+                        "alias":  "paseo/local-credential",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\hub-credentials.json",
+                        "alias":  "paseo/hub-credentials.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\hub-relationship.json",
+                        "alias":  "paseo/hub-relationship.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.paseo\\push-tokens.json",
+                        "alias":  "paseo/push-tokens.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\sessions",
+                        "alias":  "codex/sessions",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\archived_sessions",
+                        "alias":  "codex/archived_sessions",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\attachments",
+                        "alias":  "codex/attachments",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\codex-remote-attachments",
+                        "alias":  "codex/codex-remote-attachments",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\automations",
+                        "alias":  "codex/automations",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\auth.json",
+                        "alias":  "codex/auth.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\config.toml",
+                        "alias":  "codex/config.toml",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\.codex-global-state.json",
+                        "alias":  "codex/.codex-global-state.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\installation_id",
+                        "alias":  "codex/installation_id",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\history.jsonl",
+                        "alias":  "codex/history.jsonl",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\session_index.jsonl",
+                        "alias":  "codex/session_index.jsonl",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\state_5.sqlite",
+                        "alias":  "codex/state_5.sqlite",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\thread_history_1.sqlite",
+                        "alias":  "codex/thread_history_1.sqlite",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\goals_1.sqlite",
+                        "alias":  "codex/goals_1.sqlite",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\memories_1.sqlite",
+                        "alias":  "codex/memories_1.sqlite",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\queue_1.sqlite",
+                        "alias":  "codex/queue_1.sqlite",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\.codex\\sqlite\\codex-dev.db",
+                        "alias":  "codex/sqlite/codex-dev.db",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Skyphos\\data\\apps.json",
+                        "alias":  "apps/skyphos/apps.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Skyphos\\data\\settings.json",
+                        "alias":  "apps/skyphos/settings.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Skyphos\\data\\cec.json",
+                        "alias":  "apps/skyphos/cec.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Skyphos\\data\\game-connection.json",
+                        "alias":  "apps/skyphos/game-connection.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Skyphos\\data\\game-service.dpapi",
+                        "alias":  "apps/skyphos/game-service.dpapi",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Moonlight\\Moonlight Game Streaming Project\\Moonlight.ini",
+                        "alias":  "apps/moonlight/Moonlight.ini",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\Okearak\\data\\monitor.json",
+                        "alias":  "apps/okearak/monitor.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\Applications\\TV\\VacuumTube\\data\\config.json",
+                        "alias":  "apps/vacuumtube/config.json",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Skyphos.lnk",
+                        "alias":  "startup/Skyphos.lnk",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    },
+                    {
+                        "path":  "C:\\Users\\avirut\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Okearak audio.lnk",
+                        "alias":  "startup/Okearak audio.lnk",
+                        "required":  true,
+                        "excludes":  [
+
+                                     ]
+                    }
+                ]
+}
