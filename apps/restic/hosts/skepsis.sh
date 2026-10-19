@@ -2,6 +2,7 @@
 MACHINE_HOST=skepsis
 BACKUP_HOST=skepsis
 ROOT_UUID=c119f6b9-f053-448d-9de1-7bd60c46502f
+FORBIDDEN_ROOTS=(/mnt /media /run/media /srv/nas /home/avirut/selfhosted/data/books /home/avirut/selfhosted/data/storyteller)
 EXCLUDES=(node_modules/ __pycache__/ .venv/ .cache/ .svelte-kit/ .next/ target/ '*.log' '*-wal' '*-shm' '*-journal' '*.sqlite-backup' 'logs_*.sqlite' models_cache.json)
 prepare_embral() {
     postgres embral-db

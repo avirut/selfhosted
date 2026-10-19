@@ -2,6 +2,7 @@
 MACHINE_HOST=sophon-gpu
 BACKUP_HOST=sophon-gpu
 ROOT_UUID=1bfefdfb-34c9-46c7-854f-399d0a1dea04
+FORBIDDEN_ROOTS=(/mnt /media /run/media /srv/nas /home/avirut/selfhosted/data/ollama /home/avirut/Games /home/avirut/.local/share/ghost-story/models /home/avirut/.local/share/eden/nand/user/Contents /home/avirut/.local/share/eden/nand/system/Contents)
 EXCLUDES=(node_modules/ __pycache__/ .venv/ .cache/ .svelte-kit/ .next/ target/ '*.log' '*-wal' '*-shm' '*-journal' '*.sqlite-backup' 'logs_*.sqlite' models_cache.json '*.log.*')
 prepare_apps() {
     copy_source /home/avirut/selfhosted /data/ /backups/ /work/

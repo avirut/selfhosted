@@ -3,6 +3,7 @@ MACHINE_HOST=sophon
 BACKUP_HOST=sophon
 ROOT_SOURCE=rpool/ROOT/pve-1
 ROOT_FSTYPE=zfs
+FORBIDDEN_ROOTS=(/mnt /media /run/media /srv/nas)
 EXCLUDES=(node_modules/ __pycache__/ .venv/ .cache/ .svelte-kit/ .next/ target/ '*.log' '*-wal' '*-shm' '*-journal' '*.sqlite-backup' 'logs_*.sqlite' models_cache.json '*.log.*')
 prepare_apps() {
     copy_source /etc/systemd/system 

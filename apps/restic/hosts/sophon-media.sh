@@ -3,6 +3,7 @@ MACHINE_HOST=sophon-apps
 BACKUP_HOST=sophon-media
 ROOT_UUID=aa2fd39f-c27d-4a91-ab92-ddc86f5c6930
 EXTERNAL_ROOM_UUID=591FA9A771A1BE2A
+FORBIDDEN_ROOTS=(/mnt /media /run/media /srv/nas /home/avirut/selfhosted/data/books /home/avirut/selfhosted/data/bookorbit/postgres /home/avirut/selfhosted/data/nightingale/vendor)
 EXCLUDES=(node_modules/ __pycache__/ .venv/ .cache/ .svelte-kit/ .next/ target/ '*.log' '*-wal' '*-shm' '*-journal' '*.sqlite-backup' 'logs_*.sqlite' models_cache.json '*.log.*' logs.db 'logs.db-*' logs.sqlite 'logs.sqlite-*')
 prepare_apps() {
     postgres bookorbit-db

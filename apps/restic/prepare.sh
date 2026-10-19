@@ -33,20 +33,24 @@ rm -rf "$PENDING"
 mkdir -m 700 "$PENDING"
 trap 'rm -rf "$PENDING"' EXIT
 check_source() {
-    local src=$1 actual
-    [[ -e $src && ! -L $src ]] || fail "Required source unavailable: $src"
+    local src=$1 actual resolved forbidden
+    [[ $src == /* && -e $src && ! -L $src ]] || fail "Required source unavailable: $src"
     case $(uname -s) in
     Linux)
+        resolved=$(realpath -e -- "$src")
         if [[ $src == /mnt/data/media/okearak/state/room.db && ${EXTERNAL_ROOM_UUID:-} ]]; then
-            [[ $(findmnt -n -o UUID -T "$src") == "$EXTERNAL_ROOM_UUID" && $(findmnt -n -o FSTYPE -T "$src") == fuseblk ]] || fail 'Room database mount changed'
+            [[ $resolved == "$src" && $(findmnt -n -o UUID -T "$src") == "$EXTERNAL_ROOM_UUID" && $(findmnt -n -o FSTYPE -T "$src") == fuseblk ]] || fail 'Room database mount changed'
+            return
+        fi
+        for forbidden in "${FORBIDDEN_ROOTS[@]}"; do
+            [[ $resolved != "$forbidden" && $resolved != "$forbidden/"* ]] || fail 'Unapproved source root'
+        done
+        [[ $(stat -c %d "$resolved") == $(stat -c %d /) ]] || fail 'Source is not on the root filesystem'
+        if [[ ${ROOT_UUID:-} ]]; then
+            [[ $(findmnt -n -o UUID -T "$resolved") == "$ROOT_UUID" ]] || fail 'Source filesystem changed'
         else
-            case $src in /mnt/*|/media/*|/run/media/*|/srv/nas/*) fail 'Unapproved external source';; esac
-            if [[ ${ROOT_UUID:-} ]]; then
-                [[ $(findmnt -n -o UUID -T "$src") == "$ROOT_UUID" ]] || fail 'Source filesystem changed'
-            else
-                actual=$(findmnt --nofsroot -n -o SOURCE -T "$src")
-                [[ $actual == "$ROOT_SOURCE" && $(findmnt -n -o FSTYPE -T "$src") == "$ROOT_FSTYPE" ]] || fail 'Source dataset changed'
-            fi
+            actual=$(findmnt --nofsroot -n -o SOURCE -T "$resolved")
+            [[ $actual == "$ROOT_SOURCE" && $(findmnt -n -o FSTYPE -T "$resolved") == "$ROOT_FSTYPE" ]] || fail 'Source dataset changed'
         fi;;
     esac
 }
@@ -138,7 +142,7 @@ postgres() {
 "prepare_$PROFILE"
 printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$PENDING/prepared-at"
 # Generate hashes without interpreting application file contents.
-(cd "$PENDING" && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS)
+(cd "$PENDING" && find . -type f ! -path ./SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS)
 rm -rf "$BASE/$PROFILE/previous"
 if [[ -d $PAYLOAD ]]; then mv "$PAYLOAD" "$BASE/$PROFILE/previous"; fi
 mv "$PENDING" "$PAYLOAD"
