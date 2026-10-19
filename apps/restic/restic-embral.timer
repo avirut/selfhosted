@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily Embral backup
+[Timer]
+OnCalendar=*-*-* 03:10:00 America/Chicago
+Persistent=true
+Unit=restic-backup@embral.service
+[Install]
+WantedBy=timers.target

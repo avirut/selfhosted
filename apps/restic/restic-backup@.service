@@ -1,0 +1,19 @@
+[Unit]
+Description=Prepare and back up application state (%i)
+Wants=network-online.target
+After=network-online.target docker.service
+OnFailure=restic-monitor.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/kroacnet-backup/run-backup.sh /etc/kroacnet-backup/selfhosted.env /etc/kroacnet-backup/host.sh %i
+TimeoutStartSec=45min
+UMask=0077
+Nice=10
+IOWeight=10
+MemoryMax=2G
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/kroacnet-backup
