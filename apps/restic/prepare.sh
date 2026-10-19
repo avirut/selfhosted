@@ -6,8 +6,19 @@ umask 077
 CONFIG=$1; PROFILE=$2
 BASE=/var/lib/kroacnet-backup
 SQLITE=sqlite3
-TIMEOUT=timeout
-case $(uname -s) in Darwin) TIMEOUT=gtimeout;; esac
+export LC_ALL=C
+TIMEOUT=bounded
+bounded() {
+    local seconds=${1%s} child watcher status
+    shift
+    if command -v timeout >/dev/null; then timeout "${seconds}s" "$@"; return; fi
+    "$@" & child=$!
+    (sleep "$seconds"; kill -TERM "$child" 2>/dev/null) & watcher=$!
+    if wait "$child"; then status=0; else status=$?; fi
+    kill "$watcher" 2>/dev/null || true
+    wait "$watcher" 2>/dev/null || true
+    return "$status"
+}
 fail() { echo "$*" >&2; exit 1; }
 # shellcheck disable=SC1090
 source "$CONFIG"
