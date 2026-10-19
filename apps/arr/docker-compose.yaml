@@ -152,13 +152,11 @@ services:
       - SERVER_CITIES=Amsterdam
     networks:
       - swarmnet
-    ports:
-      - 8080:8080
-      - 8286:8286
+    ports: # web UIs on loopback only; tailnet access is via Tailscale Serve
+      - 127.0.0.1:8080:8080
       - 17426:17426/tcp
       - 17426:17426/udp
-      - 15544:15544/tcp
-      - 15544:15544/udp
+      - 127.0.0.1:15544:15544/tcp
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
