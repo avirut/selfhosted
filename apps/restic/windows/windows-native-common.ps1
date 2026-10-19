@@ -35,6 +35,8 @@ function Assert-PlainPath([string]$Path) {
 function Assert-Private([string]$Path) {
     $null = Assert-PlainPath $Path
     $acl = Get-Acl -LiteralPath $Path
+    $raw=[Security.AccessControl.RawSecurityDescriptor]::new($acl.GetSecurityDescriptorBinaryForm(),0)
+    if ($null -eq $raw.DiscretionaryAcl -or ($raw.ControlFlags -band [Security.AccessControl.ControlFlags]::DiscretionaryAclPresent) -eq 0) { throw 'null_dacl' }
     $owner = $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
     if ($owner -notin $script:Trusted) { throw 'untrusted_owner' }
     foreach ($ace in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
