@@ -12,13 +12,14 @@ function Expect-Refusal([scriptblock]$Action,[string]$Expected,[string]$Name) {
 function Write-Fixture([string]$Path,[string]$Text) { $null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($Path)); [IO.File]::WriteAllText($Path,$Text,$script:Utf8) }
 $src=Join-Path $fixture 'source with [brackets]'; New-PrivateDirectory $src
 $git=Join-Path $src 'repo'; New-PrivateDirectory $git
-Write-Fixture (Join-Path $git '.git\HEAD') 'ref: refs/heads/main'
-Write-Fixture (Join-Path $git '.git\refs\heads\main') ('a'*40)
+$null=Invoke-BackupGit $git @('init','--initial-branch=main')
 Write-Fixture (Join-Path $git 'tsconfig.json') "{// comment`n unquoted:invalid fixture}"
 Write-Fixture (Join-Path $git 'partial.jsonl') '{unfinished'
 Write-Fixture (Join-Path $git 'fixture.sqlite') 'not a database fixture'
 Write-Fixture (Join-Path $git 'node_modules\ignored.txt') 'ignored'
 Write-Fixture (Join-Path $git 'artifacts\ignored.txt') 'ignored'
+$null=Invoke-BackupGit $git @('add','--','tsconfig.json','partial.jsonl','fixture.sqlite')
+$null=Invoke-BackupGit $git @('-c','user.name=fixture','-c','user.email=fixture@example.invalid','commit','-m','fixture')
 $runtime=Join-Path $src 'runtime'; New-PrivateDirectory $runtime
 Write-Fixture (Join-Path $runtime 'settings.json') '{"good":true}'
 Write-Fixture (Join-Path $runtime 'history.jsonl') "{`"first`":1}`r`n{`"second`":2}`n{`"partial`":"
@@ -47,10 +48,12 @@ $config=@{schema=1;host='chrysaora';stage_dir=$stage;project_root=$fixture;limit
 Write-JsonAtomic $configPath $config
 $prepared=Invoke-WindowsPrepare $configPath $stage $Sqlite
 $manifest=Get-Content -LiteralPath (Join-Path $prepared.Payload 'manifest.json') -Raw | ConvertFrom-Json
-Assert-Test ($prepared.Files -eq 8) 'selected file count and exclusions'
-foreach ($rel in @('tsconfig.json','partial.jsonl','fixture.sqlite','.git\HEAD','.git\refs\heads\main')) {
-    Assert-Test ((Get-Hash (Join-Path $git $rel)) -eq (Get-Hash (Join-Path $prepared.Payload ('sources\test\'+$rel)))) ('opaque Git bytes '+$rel)
+Assert-Test (@($manifest.files | Where-Object {$_.path -like 'sources/test/worktree/*'}).Count -eq 3 -and @($manifest.files | Where-Object {$_.path -match '(node_modules|artifacts)'}).Count -eq 0) 'selected working file count and exclusions'
+foreach ($rel in @('tsconfig.json','partial.jsonl','fixture.sqlite')) {
+    Assert-Test ((Get-Hash (Join-Path $git $rel)) -eq (Get-Hash (Join-Path $prepared.Payload ('sources\test\worktree\'+$rel)))) ('opaque Git bytes '+$rel)
 }
+Assert-Test ((Get-Hash (Join-Path $git '.git\HEAD')) -eq (Get-Hash (Join-Path $prepared.Payload 'sources\test\git\control\HEAD'))) 'Git HEAD exact control bytes'
+Assert-Test (Test-Path -LiteralPath (Join-Path $prepared.Payload 'sources\test\git\history.bundle')) 'Git bundle included'
 $jsonl=Join-Path $prepared.Payload 'runtime\history.jsonl'
 Assert-Test ([IO.File]::ReadAllText($jsonl) -ceq "{`"first`":1}`r`n{`"second`":2}`n") 'JSONL exact CRLF/LF complete prefix'
 $r=Invoke-Native $Sqlite @('-batch','-bail','-readonly','-init','NUL',(Join-Path $prepared.Payload 'runtime\state.sqlite')) "PRAGMA integrity_check; SELECT v FROM t;`n" 10
@@ -63,11 +66,12 @@ Expect-Refusal { Assert-PreparedPayload $prepared } 'payload_changed' 'staging t
 Write-Fixture $targetSettings '{"good":true}'
 Assert-Test (@($manifest.files | Where-Object {$_.path -match '-(wal|shm|journal)$'}).Count -eq 0) 'no raw SQLite sidecars'
 Assert-Test ((Test-Path -LiteralPath (Join-Path $stage 'pending\ready.json'))) 'ready only after complete preparation'
-$guard=Get-TreeGuard $config.sources[0]
+$guard=Get-TreeGuard ([pscustomobject]$config.sources[0])
 Write-Fixture (Join-Path $git '.git\FETCH_HEAD') 'concurrent fetch'
-Expect-Refusal { Assert-TreeEqual $guard (Get-TreeGuard $config.sources[0]) } 'repository_changed' 'Git fetch detected'
+Assert-TreeEqual $guard (Get-TreeGuard ([pscustomobject]$config.sources[0]))
+Assert-Test $true 'Git fetch bookkeeping does not change working guard'
 Write-Fixture (Join-Path $git '.git\index.lock') 'locked'
-Expect-Refusal { Get-TreeGuard $config.sources[0] } 'git_lock_present' 'active Git lock refused'
+Expect-Refusal { Get-GitLocalState $git } 'git_operation_or_layout_unsupported' 'active index lock refused'
 [IO.File]::Delete((Join-Path $git '.git\index.lock'))
 Write-Fixture (Join-Path $runtime 'settings.json') '{broken'
 Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'invalid_json' 'invalid runtime JSON refused'

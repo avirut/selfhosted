@@ -95,6 +95,23 @@ official Restic/SQLite executables and a private56-source JSON allowlist. The
 Windows native allowlist is settings data; no Python installation is needed.
 The native producer removes its private pending payload after confirmed upload.
 
+Windows source repositories are stored as `ALIAS/worktree/` plus `ALIAS/git/`.
+The latter contains a Git bundle of refs/history (including reflog history),
+an additional pack of staged objects, exact index/control files and recovery
+metadata. Background fetch bookkeeping can change without invalidating a backup;
+local refs, index, HEAD and selected working files must stay stable. This keeps
+unpublished branches, stashes, staged changes and untracked source recoverable.
+
+For source recovery, verify the enclosing manifest and initialize an **empty**
+repository with the recorded object format. Verify/unbundle `history.bundle`,
+restore its refs and the recorded local symbolic refs, copy `index-objects-*`
+into `.git/objects/pack/` as `pack-*`, then copy `git/control/` into `.git/` and
+`worktree/` into the empty working tree. Do not check out HEAD first: that would
+resurrect intentionally deleted working files. Inspect restored config/hooks
+before using them; disable hooks/fsmonitor during validation. The complete
+procedure is in `windows/windows-git.ps1`. Validate with `git fsck`, status and
+the staged diff. No original source host or backup runtime is required.
+
 Skepsis owner terminal export for the vault is recovery-note.sh ENV. Its output
 contains secrets: save it independently and never put it in Git or a chat. It
 only reads the existing single env; it does not create credentials or contact B2.

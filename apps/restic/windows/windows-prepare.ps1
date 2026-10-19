@@ -1,5 +1,6 @@
 # Dot-source from windows-run.ps1. This file never loads credentials or uploads.
 . "$PSScriptRoot\windows-native-common.ps1"
+. "$PSScriptRoot\windows-git.ps1"
 Add-Type -AssemblyName System.Web.Extensions
 function Test-JsonText([string]$Text,[int]$Limit) {
     $parser=[Web.Script.Serialization.JavaScriptSerializer]::new()
@@ -96,7 +97,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
     $script:Deadline=[DateTime]::UtcNow.AddSeconds($config.limits.timeout_seconds)
     Remove-OwnedPending $Stage
     $files=[Collections.Generic.List[object]]::new(); $aliases=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    $sources=@($config.sources); $guards=@{}; $inventories=@{}; $missing=[Collections.Generic.List[string]]::new()
+    $sources=@($config.sources); $guards=@{}; $gitStates=@{}; $inventories=@{}; $missing=[Collections.Generic.List[string]]::new()
     foreach ($source in $sources) {
         $alias=[string]$source.alias
         if ($alias -notmatch '^[A-Za-z0-9_. -]+(/[A-Za-z0-9_. -]+)*$' -or @($alias.Split('/') | Where-Object {$_ -in @('.','..')}).Count -or $alias -eq 'manifest.json') { throw 'invalid_alias' }
@@ -113,6 +114,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
         if ($git) {
             if (-not [IO.Directory]::Exists([IO.Path]::Combine($root,'.git'))) { throw 'git_control_directory_missing' }
             $guards[$alias]=Get-TreeGuard $source
+            $gitStates[$alias]=Get-GitLocalState $root
         }
     }
     $pending=[IO.Path]::Combine($Stage,'pending'); New-PrivateDirectory $pending
@@ -121,9 +123,22 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
     try {
         foreach ($source in $sources) {
             $opaque=($source.PSObject.Properties.Name -contains 'git_root') -and $source.git_root
+            if ($opaque) {
+                $destination=[IO.Path]::Combine($payload,($source.alias+'/git').Replace('/','\'))
+                $gitFiles=@(Export-GitLogical $gitStates[$source.alias] $destination $config.limits $Sqlite)
+                foreach ($f in $gitFiles) {
+                    Test-Deadline
+                    $bytes=([IO.FileInfo]::new($f.Path)).Length
+                    if ($bytes -gt $config.limits.max_file_bytes) { throw 'file_limit' }
+                    $files.Add([pscustomobject]@{path=($source.alias+'/git/'+$f.Relative);method='git_logical';bytes=$bytes;sha256=(Get-Hash $f.Path)})
+                    $total+=$bytes
+                    if ($files.Count -gt $config.limits.max_files -or $total -gt $config.limits.max_total_bytes) { throw 'payload_limit' }
+                }
+            }
             foreach ($file in $inventories[$source.alias]) {
                 Test-Deadline
                 $relative=$source.alias
+                if ($opaque) { $relative+='/worktree' }
                 if ($file.Relative) { $relative+='/'+$file.Relative }
                 if (-not $opaque -and $file.Path -match '(?i)(\.db|\.sqlite|\.sqlite3)-(wal|shm|journal)$') { continue }
                 $target=[IO.Path]::Combine($payload,$relative.Replace('/','\'))
@@ -138,7 +153,10 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
             }
         }
         foreach ($source in $sources) {
-            if ($guards.ContainsKey($source.alias)) { Assert-TreeEqual $guards[$source.alias] (Get-TreeGuard $source) }
+            if ($guards.ContainsKey($source.alias)) {
+                Assert-TreeEqual $guards[$source.alias] (Get-TreeGuard $source)
+                Assert-GitLocalEqual $gitStates[$source.alias] (Get-GitLocalState $source.path)
+            }
             else {
                 $before=@($inventories[$source.alias] | ForEach-Object {$_.Relative} | Sort-Object)
                 $after=@(Get-PreparedInventory $source | ForEach-Object {$_.Relative} | Sort-Object)
@@ -150,13 +168,13 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
             Test-Deadline
             if ((Get-Hash ([IO.Path]::Combine($payload,$file.path.Replace('/','\')))) -cne $file.sha256) { throw 'staged_hash_mismatch' }
         }
-        $manifest=[ordered]@{schema=1;host='chrysaora';run_id=[Guid]::NewGuid().ToString();prepared_utc=[DateTime]::UtcNow.ToString('o');config_sha256=$configHash;source_count=$sources.Count;optional_missing=@($missing);files=@($files.ToArray());file_count=$files.Count;payload_bytes=$total;browser_preferences='excluded_unavailable'}
+        $manifest=[ordered]@{schema=1;host='chrysaora';run_id=[Guid]::NewGuid().ToString();prepared_utc=[DateTime]::UtcNow.ToString('o');config_sha256=$configHash;source_count=$sources.Count;git_representation='git-bundle-index-v1';optional_missing=@($missing);files=@($files.ToArray());file_count=$files.Count;payload_bytes=$total;browser_preferences='excluded_unavailable'}
         Write-JsonAtomic ([IO.Path]::Combine($payload,'manifest.json')) $manifest
         Write-JsonAtomic ([IO.Path]::Combine($pending,'ready.json')) @{run_id=$manifest.run_id;manifest_sha256=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}
         return [pscustomobject]@{RunId=$manifest.run_id;Files=$files.Count;Bytes=$total;Payload=$payload;ManifestHash=(Get-Hash ([IO.Path]::Combine($payload,'manifest.json')))}
     } catch {
         $originalError=$_
-        try { Remove-OwnedPending $Stage } catch {}
+        try { Remove-OwnedPending $Stage } catch { }
         throw $originalError
     }
     finally { $script:Deadline=$null }

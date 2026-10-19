@@ -131,7 +131,7 @@ function Invoke-Native([string]$Exe,[string[]]$Arguments,[string]$InputText='',[
     $si.StandardOutputEncoding=$script:Utf8; $si.StandardErrorEncoding=$script:Utf8
     if ($WorkingDirectory) { $si.WorkingDirectory=$WorkingDirectory }
     foreach ($key in @($si.EnvironmentVariables.Keys)) {
-        if ($key -match '^(RESTIC|AWS|B2|RCLONE)_') { $si.EnvironmentVariables.Remove($key) }
+        if ($key -match '^(RESTIC|AWS|B2|RCLONE|GIT)_') { $si.EnvironmentVariables.Remove($key) }
     }
     foreach ($key in $Environment.Keys) { $si.EnvironmentVariables[$key]=$Environment[$key] }
     $p=[Diagnostics.Process]::new(); $p.StartInfo=$si
@@ -163,6 +163,7 @@ function Get-SourceFiles($Source) {
         $dir=$todo.Pop()
         foreach ($p in [IO.Directory]::EnumerateFileSystemEntries($dir)) {
             $rel=$p.Substring($root.Length+1).Replace('\','/')
+            if ($rel -eq '.git' -and ($Source.PSObject.Properties.Name -contains 'git_root') -and $Source.git_root) { continue }
             if (Test-Excluded $rel @($Source.excludes)) { continue }
             $null=Assert-PlainPath $p
             $attr=[IO.File]::GetAttributes($p)
