@@ -1,6 +1,6 @@
 services:
   ollama:
-    image: ollama/ollama@sha256:292ee7945dfc3d5840a181f3ab86fedb1e66703e02c8af98b50f4da56b7e278c
+    image: ollama/ollama:0.40.10@sha256:4c5b27871a3239a717048f9b93057680a51b60c8119a7016aebb57f938e25e35
     container_name: ollama
     restart: unless-stopped
     devices:
