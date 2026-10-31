@@ -19,7 +19,7 @@ services:
       retries: 20
 
   paseo-hub:
-    image: ghcr.io/getpaseo/hub@sha256:090d987c6d1d163f5492439dd9150233c17a8d16fc6d6c5f4e1a570f93a12b88
+    image: ghcr.io/getpaseo/hub:v0.11.0@sha256:e2d9370644310bc8a6ad2f0859e4910492dd99eacf57208104c34e08a4ed2c45
     container_name: paseo-hub
     restart: unless-stopped
     depends_on:
