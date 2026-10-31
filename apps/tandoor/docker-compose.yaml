@@ -1,6 +1,6 @@
 services:
   tandoor:
-    image: vabene1111/recipes:2.7.1@sha256:10e3d2cef6b4eaa24a9c548a25dc892ce70266fc888bd85d4b349eb5a7143945
+    image: vabene1111/recipes:2.7.2@sha256:1b6d43c3c0f5d2888aa564d9daf29883212b79ad496f59f3c684c099eb1a57b9
     container_name: tandoor
     restart: unless-stopped
     env_file:
@@ -25,7 +25,7 @@ services:
         max-file: "3"
 
   tandoor-db:
-    image: postgres:16-alpine@sha256:f4610795587492cd4fb887c2dc3de301b813278bb6f616992061141b5f15ac36
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
     container_name: tandoor-db
     restart: unless-stopped
     environment:
