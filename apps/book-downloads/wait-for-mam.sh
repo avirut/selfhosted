@@ -2,12 +2,14 @@
 set -eu
 
 # Runs on every container start, including a Docker daemon restart. Compose's
-# depends_on alone does not cover that case. Only read Mousehole's local state;
-# never force extra requests against the tracker while waiting.
+# depends_on alone does not cover that case. Read Mousehole's local state and
+# current VPN egress; never force extra requests against the tracker while waiting.
+# Gluetun's public-ip file can lag an egress change, so compare against a live
+# egress lookup from this same network namespace.
 started_at=$(date -u +%Y-%m-%dT%H:%M:%S)
 echo "Waiting for Mousehole to confirm this VPN IP with MAM."
 while :; do
-    vpn_ip=$(cat /gluetun/public-ip 2>/dev/null || true)
+    vpn_ip=$(curl --fail --silent --max-time 8 https://api.ipify.org || true)
     if [ -n "$vpn_ip" ] &&
         curl --fail --silent --max-time 5 http://127.0.0.1:9999/ >/dev/null &&
         curl --fail --silent --max-time 5 \
