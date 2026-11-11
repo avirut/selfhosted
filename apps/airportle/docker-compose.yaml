@@ -4,9 +4,8 @@ services:
     container_name: airportle
     restart: unless-stopped
     networks:
-      - swarmnet # upstreams 3000
+      - proxy # upstreams 3000
 
 networks:
-  swarmnet:
+  proxy:
     external: true
-    driver: overlay

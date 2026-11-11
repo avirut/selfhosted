@@ -7,7 +7,11 @@ apps/authentik/assets*
 apps/cs/repos*
 apps/caddy-ingress/hostmap.json
 Caddyfile
+Caddyfile.bak*
 todo.md
 *.htpasswd
 apps/rclone/config/rclone.conf
 apps/quizzies/quizzies.db
+/deploy/private/
+apps/okearak/
+__pycache__/

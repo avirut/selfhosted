@@ -1,0 +1,31 @@
+services:
+  pikaraoke:
+    image: vicwomg/pikaraoke:1.23.0@sha256:d37f15321d6ca255ec0eeb808deeb7631c314137b053c042a298399e435cd5e9
+    container_name: pikaraoke
+    user: "${PUID:-1000}:${PGID:-1000}"
+    init: true
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      HOME: /home/pikaraoke
+    command: ["--url", "${PUBLIC_URL}", "--skip-youtubedl-upgrade"]
+    ports:
+      - "127.0.0.1:${PORT:-8101}:5555"
+      - "${LAN_IP}:${PORT:-8101}:5555"
+      - "${TAILSCALE_IP}:${PORT:-8101}:5555"
+    volumes:
+      - type: bind
+        source: ${DATA_DIR}
+        target: /home/pikaraoke/.pikaraoke
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${SONGS_DIR}
+        target: /app/pikaraoke-songs
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

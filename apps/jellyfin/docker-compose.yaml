@@ -9,9 +9,8 @@ services:
       - ~/selfhosted/data/jellyfin/tmp:/tmp
       - /mnt/data/media:/media
     networks:
-      - swarmnet # upstreams 8096
+      - proxy # upstreams 8096
 
 networks:
-  swarmnet:
+  proxy:
     external: true
-    driver: overlay

@@ -1,15 +1,13 @@
 services:
   actual:
-    # todo: lock to 25.12.0 once released
-    image: ghcr.io/actualbudget/actual:edge
+    image: ghcr.io/actualbudget/actual:26.11.0@sha256:06cf186569cf58d93e12659ff1a517b65b5b0ebee7050a3991d4bd8a1d398da6
     container_name: actual
     restart: unless-stopped
     volumes:
       - ~/selfhosted/data/actual:/data
     networks:
-      - swarmnet # port 5006
+      - proxy # port 5006
 
 networks:
-  swarmnet:
+  proxy:
     external: true
-    driver: overlay

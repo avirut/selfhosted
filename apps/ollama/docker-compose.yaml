@@ -1,0 +1,24 @@
+services:
+  ollama:
+    image: ollama/ollama:0.40.15@sha256:0e59999e0e8f9fd4e704bd788a89b7e4cad399367fb1365f8c102ac662288761
+    container_name: ollama
+    restart: unless-stopped
+    devices:
+      - nvidia.com/gpu=all
+    environment:
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_KEEP_ALIVE: 5m
+    ports:
+      - 127.0.0.1:11434:11434
+    volumes:
+      - type: bind
+        source: ../../data/ollama
+        target: /root/.ollama
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

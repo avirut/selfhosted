@@ -6,9 +6,8 @@ services:
     volumes:
       - ./quizzies.db:/app/src/lib/server/db/quizzies.db
     networks:
-      - swarmnet # upstreams 3000
+      - proxy # upstreams 3000
 
 networks:
-  swarmnet:
+  proxy:
     external: true
-    driver: overlay

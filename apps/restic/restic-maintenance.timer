@@ -1,0 +1,8 @@
+[Unit]
+Description=Weekly shared repository maintenance
+[Timer]
+OnCalendar=Sun *-*-* 05:30:00 America/Chicago
+Persistent=true
+Unit=restic-maintenance.service
+[Install]
+WantedBy=timers.target

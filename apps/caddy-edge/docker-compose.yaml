@@ -1,0 +1,24 @@
+services:
+  caddy-edge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: caddy:2.11.9
+    container_name: caddy-edge
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # for caddy data and config files
+      - ~/selfhosted/data/caddy/data:/data
+      - ~/selfhosted/data/caddy/config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

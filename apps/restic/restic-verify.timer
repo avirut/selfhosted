@@ -1,0 +1,8 @@
+[Unit]
+Description=Monthly restore samples
+[Timer]
+OnCalendar=*-*-01 04:30:00 America/Chicago
+Persistent=true
+Unit=restic-verify.service
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,59 @@
+services:
+  nightingale:
+    image: razzaru/nightingale:1.2.0@sha256:f1aaae886306833adfae7910fbe39b1b931da59c2757ef8d89c325fe0954f57d
+    container_name: nightingale
+    user: "${PUID:-1000}:${PGID:-1000}"
+    init: true
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      NIGHTINGALE_DATA_PATH: /data
+      NIGHTINGALE_LIBRARY_PATH: /songs
+      NIGHTINGALE_BIND: 0.0.0.0:8080
+      HOME: /data
+    ports:
+      - "127.0.0.1:${PORT:-8100}:8080"
+      - "${LAN_IP}:${PORT:-8100}:8080"
+      - "${TAILSCALE_IP}:${PORT:-8100}:8080"
+    volumes:
+      - type: bind
+        source: ${DATA_DIR}
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${LIBRARY_DIR}
+        target: /songs
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BULK_DIR}/cache
+        target: /data/cache
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BULK_DIR}/models
+        target: /data/models
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BULK_DIR}/videos
+        target: /data/videos
+        bind:
+          create_host_path: false
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -ec
+        - 'exec 3<>/dev/tcp/127.0.0.1/8080; printf "GET /api/bootstrap HTTP/1.0\r\n\r\n" >&3; read -r line <&3; [[ "$$line" == *" 200 "* ]]'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

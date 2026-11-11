@@ -1,0 +1,12 @@
+[Unit]
+Description=Check MAM account health at randomized daily intervals
+
+[Timer]
+OnBootSec=24h
+OnUnitInactiveSec=24h
+RandomizedDelaySec=12h
+FixedRandomDelay=no
+Unit=mam-health.service
+
+[Install]
+WantedBy=timers.target

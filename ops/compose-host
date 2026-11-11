@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+[ "$#" -ge 2 ] || { echo "usage: $0 {arr|jellyfin|book-downloads|bookorbit|storyteller} COMPOSE_ARGS..." >&2; exit 2; }
+project=$1
+shift
+case "$project" in arr|jellyfin|book-downloads|bookorbit|storyteller) ;; *) echo "unsupported project" >&2; exit 2;; esac
+cd "$root"
+override="$root/deploy/private/compose/$project-target.json"
+[ -f "$override" ] || { echo "missing private deployment override: $override" >&2; exit 1; }
+if [ "$project" = book-downloads ]; then
+  exec docker compose -p "$project" -f "apps/$project/docker-compose.yaml" -f "$override" --profile torrents "$@"
+fi
+exec docker compose -p "$project" -f "apps/$project/docker-compose.yaml" -f "$override" "$@"

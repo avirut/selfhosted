@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>net.kroac.backup.apps</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>/Users/avirut/.local/lib/kroacnet-backup/launchd-backup.sh</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>0</integer></dict>
+  <key>ProcessType</key><string>Background</string>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>StandardOutPath</key><string>/Users/avirut/Documents/Projects/kroacnet/private/backups/restic/stage/launchd.stdout</string>
+  <key>StandardErrorPath</key><string>/Users/avirut/Documents/Projects/kroacnet/private/backups/restic/stage/launchd.stderr</string>
+</dict>
+</plist>

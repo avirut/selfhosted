@@ -1,0 +1,83 @@
+services:
+  aiostreams:
+    image: ghcr.io/viren070/aiostreams:v2.37.0@sha256:bcfd8580695a50c8f464578a0e25af065f3bd17eac35ed82a733a18342ca9718
+    container_name: aiostreams
+    user: "${PUID:-1000}:${PGID:-1000}"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URI: sqlite://./data/db.sqlite
+      TZ: America/Chicago
+      AIOSTREAMS_AUTH_REQUIRED: "true"
+      ALLOW_PRIVATE_URLS: "false"
+      DISABLED_STREAM_TYPES: p2p
+      REMOVED_ADDONS: prowlarr:Disabled for isolated trial,jackett:Disabled for isolated trial,jackettio:Disabled for isolated trial,torznab:Disabled for isolated trial,newznab:Disabled for isolated trial,nzbhydra:Disabled for isolated trial
+      DISABLED_ADDONS: prowlarr:Disabled for isolated trial,jackett:Disabled for isolated trial,jackettio:Disabled for isolated trial,torznab:Disabled for isolated trial,newznab:Disabled for isolated trial,nzbhydra:Disabled for isolated trial
+      ENABLE_NAB_API: "false"
+      USENET_SABNZBD_API_ENABLED: "false"
+      SHARES_WEBDAV_ENABLED: "false"
+      ARR_INSTANCES: "[]"
+      USENET_PROVIDERS: "[]"
+      JELLYFIN_ENABLED: "true"
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    ports:
+      - "127.0.0.1:8102:3000"
+    volumes:
+      - type: bind
+        source: ${DATA_DIR:?Set DATA_DIR to a precreated SSD state directory}
+        target: /app/data
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  stremthru:
+    image: muniftanjim/stremthru:0.105.4@sha256:947cfcb2601c67f2f21eb11bd1ea1e555889cec9e0b347cefd0c63754b9c641a
+    container_name: aiostreams-stremthru
+    user: "1000:1000"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - .stremthru.env
+    environment:
+      STREMTHRU_BASE_URL: http://stremthru:8080
+      STREMTHRU_LOG_LEVEL: WARN
+      STREMTHRU_LOG_FORMAT: json
+      STREMTHRU_STORE_CONTENT_PROXY: "*:false"
+      STREMTHRU_TUNNEL: "*:false"
+      STREMTHRU_STORE_TUNNEL: "*:false"
+      STREMTHRU_PEER_URI: "-"
+      STREMTHRU_BUDDY_URI: ""
+      STREMTHRU_FEATURE: "-meta,-newz,-sync,-vault,-anime,-dmm_hashlist,-imdb_title,-stremio_list,-stremio_newz,-stremio_p2p,-stremio_sidekick,-stremio_store,-stremio_torz,-stremio_wrap,-probe_media_info"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/v0/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ${STREMTHRU_DATA_DIR:?Set STREMTHRU_DATA_DIR to a precreated SSD state directory}:/app/data
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

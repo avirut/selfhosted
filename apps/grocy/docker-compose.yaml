@@ -1,0 +1,25 @@
+services:
+  grocy:
+    image: lscr.io/linuxserver/grocy:4.7.1@sha256:055a930b0c556f4114408b7c145087ef362c01991446f6e20ad164d4eb4d9f0d
+    container_name: grocy
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ~/selfhosted/data/grocy/config:/config
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--location", "--output", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  proxy:
+    external: true

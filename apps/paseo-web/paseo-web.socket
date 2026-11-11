@@ -1,0 +1,10 @@
+[Unit]
+Description=Private Caddy socket for the Paseo web UI
+
+[Socket]
+ListenStream=%h/selfhosted/data/caddy/config/paseo-web.sock
+SocketMode=0600
+RemoveOnStop=yes
+
+[Install]
+WantedBy=sockets.target

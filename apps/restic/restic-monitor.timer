@@ -1,0 +1,8 @@
+[Unit]
+Description=Check backup freshness every 15 minutes
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=15min
+Unit=restic-monitor.service
+[Install]
+WantedBy=timers.target

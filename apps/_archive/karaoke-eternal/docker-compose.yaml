@@ -1,0 +1,37 @@
+services:
+  karaoke-eternal:
+    image: radrootllc/karaoke-eternal:2.0.2@sha256:96a4ff5f14657aaa0e7308f1455fedab7065756e1e3e163522619ee3aa9f5c5f
+    container_name: karaoke-eternal
+    user: "${PUID:-1000}:${PGID:-1000}"
+    init: true
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Chicago}
+      KES_SCAN: all
+    ports:
+      - "127.0.0.1:${KARAOKE_PORT:-8099}:8080"
+      - "${KARAOKE_LAN_IP:?Set KARAOKE_LAN_IP in .env}:${KARAOKE_PORT:-8099}:8080"
+      - "${KARAOKE_TAILNET_IP:?Set KARAOKE_TAILNET_IP in .env}:${KARAOKE_PORT:-8099}:8080"
+    volumes:
+      - type: bind
+        source: ${CONFIG_DIR:-../../data/karaoke-eternal}
+        target: /config
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_DIR:?Set MEDIA_DIR in .env}
+        target: /mnt/karaoke
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

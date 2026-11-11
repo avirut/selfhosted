@@ -1,6 +1,6 @@
 services:
   authentik:
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
+    image: ghcr.io/goauthentik/server:2026.8.5@sha256:602227a86455d6772e3d16b7d852713c4f864f40df5df894abd1285bb53979a5
     container_name: authentik
     restart: unless-stopped
     command: server
@@ -14,14 +14,14 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS:?database password required}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     volumes:
-      - ~/selfhosted/data/authentik/media:/media
+      - ~/selfhosted/data/authentik/media:/data/media
       - ~/selfhosted/data/authentik/custom-templates:/templates
       - ./custom.css:/web/dist/custom.css
     networks:
-      - swarmnet # port 9000
+      - proxy # port 9000
 
   authentik-worker:
-    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
+    image: ghcr.io/goauthentik/server:2026.8.5@sha256:602227a86455d6772e3d16b7d852713c4f864f40df5df894abd1285bb53979a5
     container_name: authentik-worker
     user: root
     restart: unless-stopped
@@ -37,14 +37,14 @@ services:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ~/selfhosted/data/authentik/media:/media
+      - ~/selfhosted/data/authentik/media:/data/media
       - ~/selfhosted/data/authentik/certs:/certs
       - ~/selfhosted/data/authentik/custom-templates:/templates
     networks:
-      - swarmnet
+      - proxy
 
   authentik-postgresql:
-    image: postgres:17-alpine
+    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
     container_name: authentik-postgresql
     restart: unless-stopped
     env_file:
@@ -56,9 +56,8 @@ services:
     volumes:
       - ~/selfhosted/data/authentik/database:/var/lib/postgresql/data
     networks:
-      - swarmnet
+      - proxy
 
 networks:
-  swarmnet:
+  proxy:
     external: true
-    driver: overlay

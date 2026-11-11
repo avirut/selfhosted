@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily application backup
+[Timer]
+OnCalendar=*-*-* 03:30:00 America/Chicago
+Persistent=true
+Unit=restic-backup@apps.service
+[Install]
+WantedBy=timers.target
