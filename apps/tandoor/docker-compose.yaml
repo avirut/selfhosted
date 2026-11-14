@@ -25,7 +25,7 @@ services:
         max-file: "3"
 
   tandoor-db:
-    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
+    image: postgres:16-alpine@sha256:a2f7e20374cd8fd8ed4a588b79549e10589bea7b1686e77922f5ac741b80b8a1
     container_name: tandoor-db
     restart: unless-stopped
     environment:
