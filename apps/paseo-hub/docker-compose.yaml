@@ -2,7 +2,7 @@ name: paseo-hub
 
 services:
   paseo-hub-db:
-    image: postgres:17-alpine@sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+    image: postgres:17-alpine@sha256:005c5c37db96c1e6652a79ea31f9886402fba81ac95dc2db897739121dd7f8f2
     container_name: paseo-hub-db
     restart: unless-stopped
     environment:
