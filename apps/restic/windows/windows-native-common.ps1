@@ -153,7 +153,7 @@ function Test-Excluded([string]$Relative,[string[]]$Patterns) {
 function Get-SourceFiles($Source) {
     $root=Assert-PlainPath $Source.path
     if (-not [IO.File]::Exists($root) -and -not [IO.Directory]::Exists($root)) {
-        if ($Source.required) { throw 'required_source_missing' }; return
+        throw 'source_inventory_changed'
     }
     if ([IO.File]::Exists($root)) { [pscustomobject]@{Path=$root;Relative=''}; return }
     $todo=[Collections.Generic.Stack[string]]::new(); $todo.Push($root)

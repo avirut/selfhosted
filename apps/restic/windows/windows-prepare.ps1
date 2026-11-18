@@ -96,6 +96,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
     Remove-OwnedPending $Stage
     $files=[Collections.Generic.List[object]]::new(); $aliases=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
     $sources=@($config.sources); $guards=@{}; $gitStates=@{}; $inventories=@{}; $missing=[Collections.Generic.List[string]]::new()
+    $presentSources=[Collections.Generic.List[object]]::new()
     $gitCuts=[Collections.Generic.List[object]]::new()
     foreach ($source in $sources) {
         $alias=[string]$source.alias
@@ -105,7 +106,17 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
         $root=Assert-PlainPath $source.path
         $stageFull=Assert-PlainPath $Stage
         if ($root -eq $stageFull -or $root.StartsWith($stageFull+'\',[StringComparison]::OrdinalIgnoreCase)) { throw 'staging_source_overlap' }
-        if (-not (Test-Path -LiteralPath $root)) { $missing.Add($alias) }
+        try {
+            $item=Get-Item -LiteralPath $root -Force -ErrorAction Stop
+        } catch [System.Management.Automation.ItemNotFoundException] {
+            $item=$null
+        }
+        if ($null -eq $item) {
+            if ($source.required) { throw 'required_source_missing' }
+            $missing.Add($alias)
+            continue
+        }
+        $presentSources.Add($source)
         $git=($source.PSObject.Properties.Name -contains 'git_root') -and $source.git_root
         if (-not $git) {
             $list=@(Get-PreparedInventory $source)
@@ -117,7 +128,7 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
     $payload=[IO.Path]::Combine($pending,'payload'); New-PrivateDirectory $payload
     $total=[long]0
     try {
-        foreach ($source in $sources) {
+        foreach ($source in $presentSources) {
             $opaque=($source.PSObject.Properties.Name -contains 'git_root') -and $source.git_root
             if ($opaque) {
                 $captureStarted=[DateTime]::UtcNow.ToString('o')
@@ -161,13 +172,14 @@ function Invoke-WindowsPrepare([string]$ConfigPath,[string]$Stage,[string]$Sqlit
                 $gitCuts.Add([pscustomobject]@{alias=$source.alias;capture_started_utc=$captureStarted;validated_utc=[DateTime]::UtcNow.ToString('o');head=$gitStates[$source.alias].Head;working_files=$inventories[$source.alias].Count})
             }
         }
-        foreach ($source in $sources) {
+        foreach ($source in $presentSources) {
             if (-not $guards.ContainsKey($source.alias)) {
                 $before=@($inventories[$source.alias] | ForEach-Object {$_.Relative} | Sort-Object)
                 $after=@(Get-PreparedInventory $source | ForEach-Object {$_.Relative} | Sort-Object)
                 if (($before -join "`n") -cne ($after -join "`n")) { throw 'source_inventory_changed' }
             }
         }
+        if ($files.Count -eq 0) { throw 'no_backup_data' }
         if ((Get-Hash $ConfigPath) -cne $configHash) { throw 'config_changed' }
         foreach ($file in $files) {
             Test-Deadline

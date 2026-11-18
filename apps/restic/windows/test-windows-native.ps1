@@ -84,6 +84,17 @@ $held=[IO.File]::Open((Join-Path $runtime 'settings.json'),'Open','ReadWrite','N
 try { Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'being used' 'locked source refused' } finally { $held.Dispose() }
 $config.sources+=@{path=(Join-Path $src 'missing');alias='missing';required=$true;excludes=@()}; Write-JsonAtomic $configPath $config
 Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'required_source_missing' 'required missing source refused'
+$config.sources[2].required=$false
+$config.sources+=@{path=(Join-Path $src 'missing-repo');alias='missing-repo';required=$false;git_root=$true;excludes=@()}
+Write-JsonAtomic $configPath $config
+$prepared=Invoke-WindowsPrepare $configPath $stage $Sqlite
+$manifest=Get-Content -LiteralPath (Join-Path $prepared.Payload 'manifest.json') -Raw | ConvertFrom-Json
+Assert-Test (($manifest.optional_missing -join ',') -eq 'missing,missing-repo') 'absent optional file and repository recorded'
+Assert-Test ($manifest.source_count -eq 4 -and $manifest.git_cuts.Count -eq 1) 'present repository backed up despite missing optional repository'
+$allSources=$config.sources
+$config.sources=$allSources[2..3]; Write-JsonAtomic $configPath $config
+Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'no_backup_data' 'all optional sources absent refuses a manifest-only backup'
+$config.sources=$allSources
 $config.sources=$config.sources[0..1]; Write-JsonAtomic $configPath $config
 $config.limits.max_file_bytes=4; Write-JsonAtomic $configPath $config
 Expect-Refusal { Invoke-WindowsPrepare $configPath $stage $Sqlite } 'file_limit' 'oversize file refused'
