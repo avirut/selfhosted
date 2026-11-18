@@ -119,6 +119,17 @@ copy_stable() {
     after=$(find "$src" -type f -exec cksum {} + | LC_ALL=C sort | cksum)
     [[ $before == "$after" ]] || fail 'Application files changed during backup'
 }
+copy_if_present() {
+    local copy=$1 src=$2
+    shift
+    if [[ -e $src || -L $src ]]; then
+        "$copy" "$@"
+    else
+        printf '%s\n' "$src" >> "$PENDING/missing-sources.txt"
+    fi
+}
+copy_optional() { copy_if_present copy_source "$@"; }
+copy_optional_stable() { copy_if_present copy_stable "$@"; }
 postgres() {
     local container=$1 user primary db directory names
     user=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$container" | sed -n 's/^POSTGRES_USER=//p')
@@ -136,7 +147,17 @@ postgres() {
         docker exec -i "$container" pg_restore --list < "$directory/$db.dump" >/dev/null
     done <<< "$names"
 }
+postgres_optional() {
+    local container=$1 containers
+    containers=$(docker container ls --all --format '{{.Names}}')
+    if grep -Fxq -- "$container" <<< "$containers"; then
+        postgres "$container"
+    else
+        printf 'postgres:%s\n' "$container" >> "$PENDING/missing-sources.txt"
+    fi
+}
 "prepare_$PROFILE"
+[[ -n $(find "$PENDING" -type f ! -path "$PENDING/missing-sources.txt" -print -quit) ]] || fail 'No backup data prepared'
 printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$PENDING/prepared-at"
 (cd "$PENDING" && find . -type f ! -path ./SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS)
 rm -rf "$BASE/$PROFILE/previous"

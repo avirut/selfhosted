@@ -18,23 +18,23 @@ prepare_apps() {
     copy_source /etc/modprobe.d 
     copy_source /etc/sysctl.d 
     copy_source /etc/modules 
-    copy_source /home/avirut/kroacnet /scratch/ /private/
-    copy_source /home/avirut/.paseo /models/ /runtime/ /paseo.pid '*.log.txt' '*.lock'
-    copy_source /home/avirut/.codex/sessions 
-    copy_source /home/avirut/.codex/archived_sessions 
-    copy_source /home/avirut/.codex/session_index.jsonl 
-    copy_source /home/avirut/.codex/config.toml 
-    copy_source /home/avirut/.codex/auth.json 
-    copy_source /home/avirut/.codex/installation_id 
-    copy_source /home/avirut/.codex/state_5.sqlite 
-    copy_source /home/avirut/.codex/thread_history_1.sqlite 
-    copy_source /home/avirut/.codex/queue_1.sqlite 
-    copy_source /home/avirut/.codex/goals_1.sqlite 
-    copy_source /home/avirut/.codex/memories_1.sqlite 
-    copy_source /home/avirut/.codex/artifacts 
-    copy_source /home/avirut/.codex/visualizations 
-    copy_source /home/avirut/.codex/attachments '*.zip'
-    copy_source /home/avirut/.config/systemd/user/paseo.service 
-    copy_source /home/avirut/.local/state/kroacnet-pm/20261014/connections.json 
-    copy_source /home/avirut/skyphos /.git/ /artifacts/ bin/ obj/ dist/ build/ coverage/ /ui/.pnpm-store/
+    copy_optional /home/avirut/kroacnet /scratch/ /private/
+    copy_optional /home/avirut/.paseo /models/ /runtime/ /paseo.pid '*.log.txt' '*.lock'
+    copy_optional /home/avirut/.codex/sessions
+    copy_optional /home/avirut/.codex/archived_sessions
+    copy_optional /home/avirut/.codex/session_index.jsonl
+    copy_optional /home/avirut/.codex/config.toml
+    copy_optional /home/avirut/.codex/auth.json
+    copy_optional /home/avirut/.codex/installation_id
+    copy_optional /home/avirut/.codex/state_5.sqlite
+    copy_optional /home/avirut/.codex/thread_history_1.sqlite
+    copy_optional /home/avirut/.codex/queue_1.sqlite
+    copy_optional /home/avirut/.codex/goals_1.sqlite
+    copy_optional /home/avirut/.codex/memories_1.sqlite
+    copy_optional /home/avirut/.codex/artifacts
+    copy_optional /home/avirut/.codex/visualizations
+    copy_optional /home/avirut/.codex/attachments '*.zip'
+    copy_optional /home/avirut/.config/systemd/user/paseo.service
+    copy_optional /home/avirut/.local/state/kroacnet-pm/20261014/connections.json
+    copy_optional /home/avirut/skyphos /.git/ /artifacts/ bin/ obj/ dist/ build/ coverage/ /ui/.pnpm-store/
 }
