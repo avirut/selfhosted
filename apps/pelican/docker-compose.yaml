@@ -13,7 +13,8 @@ services:
       - SESSION_SECURE_COOKIE=true
       - MAIL_MAILER=log
     extra_hosts:
-      - ${PELICAN_WINGS_HOST}:${PELICAN_WINGS_ADDRESS}
+      - ${PELICAN_PANEL_HOST}:${PELICAN_EDGE_ADDRESS}
+      - ${PELICAN_WINGS_HOST}:${PELICAN_EDGE_ADDRESS}
     volumes:
       - /var/lib/pelican-panel:/pelican-data
       - ~/selfhosted/data/pelican/panel-logs:/var/www/html/storage/logs
@@ -36,6 +37,9 @@ services:
       - WINGS_UID=${PELICAN_UID}
       - WINGS_GID=${PELICAN_GID}
       - WINGS_USERNAME=pelican
+    extra_hosts:
+      - ${PELICAN_PANEL_HOST}:${PELICAN_EDGE_ADDRESS}
+      - ${PELICAN_WINGS_HOST}:${PELICAN_EDGE_ADDRESS}
     ports:
       - 127.0.0.1:8121:8080
     volumes:
