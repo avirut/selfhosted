@@ -1,8 +1,7 @@
 [Unit]
-Description=Weekly shared repository maintenance
+Description=Check whether weekly repository maintenance is due
 [Timer]
-OnCalendar=Sun *-*-* 05:30:00 America/Chicago
-Persistent=true
+OnCalendar=*-*-* 05:30:00 America/Chicago
 Unit=restic-maintenance.service
 [Install]
 WantedBy=timers.target

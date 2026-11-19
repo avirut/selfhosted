@@ -15,7 +15,7 @@ install -d /etc/systemd/system/restic-backup@apps.service.d /etc/systemd/system/
 install -m 644 "$SCRIPT_DIR/hosts/$host-sqlite-context.conf" /etc/systemd/system/restic-backup@apps.service.d/sqlite-context.conf
 printf '[Timer]\nOnCalendar=\nOnCalendar=*-*-* %s:00 America/Chicago\n' "$time" > /etc/systemd/system/restic-apps.timer.d/schedule.conf
 if [[ $host == skepsis ]]; then
-    for script in maintenance monitor verify; do install -m 755 "$SCRIPT_DIR/$script.sh" /opt/kroacnet-backup/; done
+    for script in health maintenance monitor verify; do install -m 755 "$SCRIPT_DIR/$script.sh" /opt/kroacnet-backup/; done
     for unit in restic-embral.timer restic-maintenance.service restic-maintenance.timer restic-monitor.service restic-monitor.timer restic-verify.service restic-verify.timer; do install -m 644 "$SCRIPT_DIR/$unit" /etc/systemd/system/; done
     install -d /etc/systemd/system/restic-backup@.service.d
     install -m 644 "$SCRIPT_DIR/restic-backup-alerts.conf" /etc/systemd/system/restic-backup@.service.d/alerts.conf
