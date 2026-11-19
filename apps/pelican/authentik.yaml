@@ -42,3 +42,28 @@ entries:
     attrs:
       user: !Find [authentik_core.user, [username, avirut]]
       enabled: true
+  - model: authentik_providers_proxy.proxyprovider
+    id: pelican-access-provider
+    identifiers:
+      name: Pelican panel owner access
+    attrs:
+      mode: forward_single
+      external_host: !Env PELICAN_OIDC_LAUNCH_URL
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+  - model: authentik_core.application
+    id: pelican-access-application
+    identifiers:
+      slug: pelican-access
+    attrs:
+      name: Pelican panel access
+      provider: !KeyOf pelican-access-provider
+      meta_launch_url: blank://blank
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf pelican-access-application
+      order: 0
+    attrs:
+      user: !Find [authentik_core.user, [username, avirut]]
+      enabled: true

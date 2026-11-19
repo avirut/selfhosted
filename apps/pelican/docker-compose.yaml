@@ -9,16 +9,17 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - BEHIND_PROXY=true
-      - TRUSTED_PROXIES=172.29.0.0/16
+      - TRUSTED_PROXIES=172.27.0.0/16
       - SESSION_SECURE_COOKIE=true
       - MAIL_MAILER=log
     extra_hosts:
-      - ${PELICAN_FQDN}:${PELICAN_ADDRESS}
+      - ${PELICAN_WINGS_HOST}:${PELICAN_WINGS_ADDRESS}
     volumes:
       - /var/lib/pelican-panel:/pelican-data
       - ~/selfhosted/data/pelican/panel-logs:/var/www/html/storage/logs
     networks:
       - pelican
+      - proxy
     logging:
       driver: json-file
       options:
@@ -35,11 +36,8 @@ services:
       - WINGS_UID=${PELICAN_UID}
       - WINGS_GID=${PELICAN_GID}
       - WINGS_USERNAME=pelican
-    extra_hosts:
-      - ${PELICAN_FQDN}:${PELICAN_ADDRESS}
     ports:
       - 127.0.0.1:8121:8080
-      - ${PELICAN_ADDRESS}:2022:2022
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/containers/:/var/lib/docker/containers/
@@ -50,26 +48,7 @@ services:
       - /etc/ssl/certs:/etc/ssl/certs:ro
     networks:
       - pelican
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: "3"
-
-  pelican-proxy:
-    image: caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
-    container_name: pelican-proxy
-    restart: unless-stopped
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ~/selfhosted/data/pelican/caddy/data:/data
-      - ~/selfhosted/data/pelican/caddy/config:/config
-      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
-    ports:
-      - ${PELICAN_ADDRESS}:8445:8445
-      - ${PELICAN_ADDRESS}:8446:8446
-    networks:
-      - pelican
+      - proxy
     logging:
       driver: json-file
       options:
@@ -82,3 +61,5 @@ networks:
     ipam:
       config:
         - subnet: 172.29.0.0/16
+  proxy:
+    external: true
