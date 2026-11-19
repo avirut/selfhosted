@@ -1,0 +1,84 @@
+services:
+  pelican-panel:
+    image: ghcr.io/pelican/panel:v1.0.0-rc.3@sha256:68618885bb9cf49154c627863ba0bfc7308888ec87536aee7c8cbc2e4b0d929d
+    container_name: pelican-panel
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - BEHIND_PROXY=true
+      - TRUSTED_PROXIES=172.29.0.0/16
+      - SESSION_SECURE_COOKIE=true
+      - MAIL_MAILER=log
+    extra_hosts:
+      - ${PELICAN_FQDN}:${PELICAN_ADDRESS}
+    volumes:
+      - ~/selfhosted/data/pelican/panel:/pelican-data
+      - ~/selfhosted/data/pelican/panel-logs:/var/www/html/storage/logs
+    networks:
+      - pelican
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  pelican-wings:
+    image: ghcr.io/pelican/wings:v1.0.0-rc.2@sha256:45a970378805c1fb9ba25c8f933c25f2339e5a7a87d9925721b89459abe66c7b
+    container_name: pelican-wings
+    restart: unless-stopped
+    tty: true
+    environment:
+      - TZ=America/Chicago
+      - WINGS_UID=${PELICAN_UID}
+      - WINGS_GID=${PELICAN_GID}
+      - WINGS_USERNAME=pelican
+    extra_hosts:
+      - ${PELICAN_FQDN}:${PELICAN_ADDRESS}
+    ports:
+      - 127.0.0.1:8121:8080
+      - ${PELICAN_ADDRESS}:2022:2022
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers/:/var/lib/docker/containers/
+      - /etc/pelican/:/etc/pelican/
+      - /var/lib/pelican/:/var/lib/pelican/
+      - /var/log/pelican/:/var/log/pelican/
+      - /tmp/pelican/:/tmp/pelican/
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+    networks:
+      - pelican
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  pelican-proxy:
+    image: caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
+    container_name: pelican-proxy
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ~/selfhosted/data/pelican/caddy/data:/data
+      - ~/selfhosted/data/pelican/caddy/config:/config
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+    ports:
+      - ${PELICAN_ADDRESS}:8445:8445
+      - ${PELICAN_ADDRESS}:8446:8446
+    networks:
+      - pelican
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  pelican:
+    name: pelican
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16

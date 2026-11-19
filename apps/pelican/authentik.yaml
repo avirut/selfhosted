@@ -1,0 +1,41 @@
+version: 1
+metadata:
+  name: Pelican
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: pelican-provider
+    identifiers:
+      name: Provider for Pelican
+    attrs:
+      client_type: confidential
+      client_id: pelican
+      client_secret: !Env PELICAN_OIDC_CLIENT_SECRET
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      redirect_uris:
+        - matching_mode: strict
+          url: !Env PELICAN_OIDC_REDIRECT_URI
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
+      sub_mode: hashed_user_id
+      issuer_mode: per_provider
+      include_claims_in_id_token: true
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+  - model: authentik_core.application
+    id: pelican-application
+    identifiers:
+      slug: pelican
+    attrs:
+      name: Pelican
+      provider: !KeyOf pelican-provider
+      meta_launch_url: !Env PELICAN_OIDC_LAUNCH_URL
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf pelican-application
+      order: 0
+    attrs:
+      user: !Find [authentik_core.user, [username, avirut]]
+      enabled: true
