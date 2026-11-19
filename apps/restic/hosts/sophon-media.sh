@@ -66,7 +66,8 @@ prepare_apps() {
     copy_optional /home/avirut/selfhosted/data/aiostreams-stremthru/stremthru.db
     copy_optional /home/avirut/.config/okearak
     copy_optional /mnt/data/media/okearak/state/room.db
-    copy_optional /home/avirut/selfhosted/data/pelican /caddy/ /panel-logs/
+    copy_optional /home/avirut/selfhosted/data/pelican /caddy/ /panel-logs/ /panel/
+    copy_optional /var/lib/pelican-panel
     copy_optional /etc/pelican
     local server
     for server in /var/lib/pelican/volumes/*/; do

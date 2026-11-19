@@ -15,7 +15,7 @@ services:
     extra_hosts:
       - ${PELICAN_FQDN}:${PELICAN_ADDRESS}
     volumes:
-      - ~/selfhosted/data/pelican/panel:/pelican-data
+      - /var/lib/pelican-panel:/pelican-data
       - ~/selfhosted/data/pelican/panel-logs:/var/www/html/storage/logs
     networks:
       - pelican
