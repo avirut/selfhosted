@@ -4,6 +4,38 @@ ROOT_UUID=aa2fd39f-c27d-4a91-ab92-ddc86f5c6930
 EXTERNAL_ROOM_UUID=591FA9A771A1BE2A
 FORBIDDEN_ROOTS=(/mnt /media /run/media /srv/nas /home/avirut/selfhosted/data/books /home/avirut/selfhosted/data/bookorbit/postgres /home/avirut/selfhosted/data/nightingale/vendor)
 EXCLUDES=(node_modules/ __pycache__/ .venv/ .cache/ .svelte-kit/ .next/ target/ '*.log' '*-wal' '*-shm' '*-journal' '*.sqlite-backup' 'logs_*.sqlite' models_cache.json '*.log.*' logs.db 'logs.db-*' logs.sqlite 'logs.sqlite-*')
+pelican_command() {
+    local token
+    token=$(awk '$1 == "token:" {print $2}' /etc/pelican/config.yml | tr -d '\047\042')
+    curl -fsS -o /dev/null --max-time 15 -X POST -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data "{\"commands\":[$2]}" "http://127.0.0.1:8121/api/servers/$1/commands"
+}
+pelican_save_on() {
+    local attempt
+    for attempt in 1 2 3 4 5; do
+        if pelican_command "$1" '"save-on"'; then return 0; fi
+        sleep 3
+    done
+    echo "Minecraft autosave was not re-enabled for $1" >&2
+    return 1
+}
+copy_pelican_server() {
+    local volume=$1 uuid=${1##*/} log=$1/logs/latest.log lines=0 attempt
+    local skip=(/cache/ /libraries/ /versions/ /logs/ /crash-reports/)
+    if [[ -f $log ]]; then lines=$(wc -l < "$log"); fi
+    if pelican_command "$uuid" '"save-off","save-all flush"' 2>/dev/null; then
+        (
+            trap 'pelican_save_on "$uuid" || exit 1' EXIT
+            for attempt in {1..60}; do
+                if grep -q 'Saved the game' < <(tail -n "+$((lines + 1))" "$log"); then break; fi
+                (( attempt < 60 )) || fail 'Minecraft save did not finish'
+                sleep 1
+            done
+            copy_source "$volume" "${skip[@]}"
+        )
+    else
+        copy_source "$volume" "${skip[@]}"
+    fi
+}
 prepare_apps() {
     postgres_optional bookorbit-db
     copy_optional /home/avirut/selfhosted /data/ /backups/ /work/
@@ -34,4 +66,10 @@ prepare_apps() {
     copy_optional /home/avirut/selfhosted/data/aiostreams-stremthru/stremthru.db
     copy_optional /home/avirut/.config/okearak
     copy_optional /mnt/data/media/okearak/state/room.db
+    copy_optional /home/avirut/selfhosted/data/pelican /caddy/ /panel-logs/
+    copy_optional /etc/pelican
+    local server
+    for server in /var/lib/pelican/volumes/*/; do
+        if [[ -d $server ]]; then copy_pelican_server "${server%/}"; fi
+    done
 }
