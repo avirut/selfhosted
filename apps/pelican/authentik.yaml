@@ -10,6 +10,9 @@ entries:
       client_type: confidential
       client_id: pelican
       client_secret: !Env PELICAN_OIDC_CLIENT_SECRET
+      grant_types:
+        - authorization_code
+        - refresh_token
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       redirect_uris:
