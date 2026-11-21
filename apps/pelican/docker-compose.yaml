@@ -1,6 +1,6 @@
 services:
   pelican-panel:
-    image: ghcr.io/pelican/panel:v1.0.0-rc.3@sha256:68618885bb9cf49154c627863ba0bfc7308888ec87536aee7c8cbc2e4b0d929d
+    image: ghcr.io/pelican/panel:v1.0.0-rc.4@sha256:1d38b9781b072729f5f9d78440a38a0513b879e61c2d4f2a9812200dee21a539
     container_name: pelican-panel
     restart: unless-stopped
     env_file:
@@ -28,7 +28,7 @@ services:
         max-file: "3"
 
   pelican-wings:
-    image: ghcr.io/pelican/wings:v1.0.0-rc.2@sha256:45a970378805c1fb9ba25c8f933c25f2339e5a7a87d9925721b89459abe66c7b
+    image: ghcr.io/pelican/wings:v1.0.0-rc.3@sha256:046c61f8df5c1363decc89f7777cb78f9b7b5230770b19d4588ab143a85589b4
     container_name: pelican-wings
     restart: unless-stopped
     tty: true
