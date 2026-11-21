@@ -1,6 +1,6 @@
 services:
   aiostreams:
-    image: ghcr.io/viren070/aiostreams:v2.37.0@sha256:bcfd8580695a50c8f464578a0e25af065f3bd17eac35ed82a733a18342ca9718
+    image: ghcr.io/viren070/aiostreams:v2.38.1@sha256:1b90bc2fda70f365dff2ce98fc311a24708cca9841efe09aefe309cd4da1fb2c
     container_name: aiostreams
     user: "${PUID:-1000}:${PGID:-1000}"
     init: true
