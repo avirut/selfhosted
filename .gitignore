@@ -15,3 +15,4 @@ apps/quizzies/quizzies.db
 /deploy/private/
 apps/okearak/
 __pycache__/
+apps/pelican/waymarks/build/

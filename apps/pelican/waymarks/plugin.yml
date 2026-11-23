@@ -1,0 +1,4 @@
+name: Waymarks
+version: 1.0.0
+main: net.kroac.waymarks.Waymarks
+api-version: "26.3"
