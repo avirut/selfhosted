@@ -1,0 +1,8 @@
+/home/avirut/.local/state/kroacnet-pm
+/home/avirut/selfhosted/data/nightingale/models
+/home/avirut/selfhosted/data/nightingale/vendor
+/home/avirut/selfhosted/data/nightingale/videos
+/srv/media-restore
+/var/lib/pelican/volumes/*/cache
+/var/lib/pelican/volumes/*/libraries
+/var/lib/pelican/volumes/*/versions

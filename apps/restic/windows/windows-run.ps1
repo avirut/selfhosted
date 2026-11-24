@@ -1,47 +1,38 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Prepare','Backup')][string]$Mode='Backup',
-    [string]$ConfigPath='C:\ProgramData\KroacnetBackup\windows-native.json',
-    [string]$EnvPath='C:\ProgramData\KroacnetBackup\shared.env',
-    [string]$Restic='C:\ProgramData\KroacnetBackup\bin\restic.exe',
-    [string]$Sqlite='C:\ProgramData\KroacnetBackup\bin\sqlite3.exe'
+    [string]$Root='C:\',
+    [string]$Base='C:\ProgramData\KroacnetBackup',
+    [switch]$DryRun
 )
-. "$PSScriptRoot\windows-prepare.ps1"
-$lock=$null; $stage=$null; $started=[DateTime]::UtcNow.ToString('o')
+Set-StrictMode -Version Latest
+$ErrorActionPreference='Stop'
+$state=Join-Path $Base 'state'
+$null=New-Item -ItemType Directory -Force -Path $state
+function Save-Result([hashtable]$Value) {
+    $Value.completed_utc=[DateTime]::UtcNow.ToString('o')
+    $Value | ConvertTo-Json -Compress | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $state 'last-attempt.json')
+}
 try {
-    Assert-Private $ConfigPath
-    $config=[IO.File]::ReadAllText($ConfigPath) | ConvertFrom-Json
-    $stage=Assert-PlainPath $config.stage_dir; Assert-Private $stage
-    $lockPath=[IO.Path]::Combine($stage,'native-backup.lock'); $null=Assert-PlainPath $lockPath
-    try { $lock=[IO.File]::Open($lockPath,'OpenOrCreate','ReadWrite','None') } catch { throw 'backup_already_running' }
-    $result=Invoke-WindowsPrepare $ConfigPath $stage $Sqlite
-    if ($Mode -eq 'Prepare') {
-        Write-Output (@{status='prepared';run_id=$result.RunId;files=$result.Files;bytes=$result.Bytes;manifest_sha256=$result.ManifestHash} | ConvertTo-Json -Compress)
-        exit 0
+    foreach ($line in [IO.File]::ReadAllLines((Join-Path $Base 'shared.env'))) {
+        if ($line -match '^([A-Z0-9_]+)=(.*)$') {
+            $name=$Matches[1]; $value=$Matches[2]
+            if ($value -match "^'(.*)'$") { $value=$Matches[1] }
+            [Environment]::SetEnvironmentVariable($name,$value,'Process')
+        }
     }
-    Assert-Private $Restic
-    $values=Read-SharedEnv $EnvPath
-    $cache=[IO.Path]::Combine($stage,'restic-cache'); New-PrivateDirectory $cache
-    Assert-PreparedPayload $result
-    $r=Invoke-Native $Restic @('--json','--cache-dir',$cache,'--retry-lock','2m','backup','--host','chrysaora','--tag','apps','--','payload') '' 7200 $values ([IO.Path]::GetDirectoryName($result.Payload))
-    $values.Clear()
-    if ($r.Exit -ne 0) { throw ('restic_exit_'+$r.Exit) }
-    Assert-PreparedPayload $result
-    $summary=@($r.Out -split "`n" | Where-Object {$_} | ForEach-Object { $_ | ConvertFrom-Json } | Where-Object {$_.message_type -eq 'summary'})
-    if ($summary.Count -ne 1 -or $summary[0].snapshot_id -notmatch '^[a-f0-9]{8,64}$') { throw 'restic_summary_missing' }
-    $success=@{status='success';started_utc=$started;completed_utc=[DateTime]::UtcNow.ToString('o');host='chrysaora';tag='apps';run_id=$result.RunId;snapshot_id=$summary[0].snapshot_id;files=$result.Files;bytes=$result.Bytes;manifest_sha256=$result.ManifestHash;browser_preferences='excluded_unavailable'}
-    Write-JsonAtomic ([IO.Path]::Combine($stage,'last-success.json')) $success
-    Write-JsonAtomic ([IO.Path]::Combine($stage,'last-attempt.json')) $success
-    Remove-OwnedPending $stage
-    Write-Output ($success | ConvertTo-Json -Compress)
+    $arguments=@('--json','--cache-dir',(Join-Path $state 'cache'),'--retry-lock','5m','backup',$Root,'--use-fs-snapshot','--exclude-caches','--exclude-cloud-files',
+        '--iexclude-file',(Join-Path $Base 'native\excludes.txt'),'--iexclude',$state,'--host','chrysaora','--tag','apps')
+    if ($DryRun) { $arguments+='--dry-run' }
+    $ErrorActionPreference='Continue'
+    & (Join-Path $Base 'bin\restic.exe') @arguments > (Join-Path $state 'backup.jsonl') 2> (Join-Path $state 'unreadable.jsonl')
+    $status=$LASTEXITCODE
+    $ErrorActionPreference='Stop'
+    if ($status -ne 0 -and $status -ne 3) { throw "restic exited $status" }
+    $summary=Get-Content (Join-Path $state 'backup.jsonl') | Where-Object { $_ -match '"message_type":"summary"' } | Select-Object -Last 1 | ConvertFrom-Json
+    if (-not $summary.snapshot_id) { throw 'restic reported no snapshot' }
+    Save-Result @{status='success';snapshot_id=$summary.snapshot_id;files=$summary.total_files_processed;bytes=$summary.total_bytes_processed;added=$summary.data_added_packed}
     exit 0
 } catch {
-    $category='native_failure'
-    if ($_.Exception.Message -match '^[a-z][a-z0-9_]{1,80}$') { $category=$_.Exception.Message }
-    if ($lock -and $stage) {
-        try { Remove-OwnedPending $stage } catch { $category+=':pending_cleanup_failed' }
-        try { Write-JsonAtomic ([IO.Path]::Combine($stage,'last-attempt.json')) @{status='failed';category=$category;started_utc=$started;completed_utc=[DateTime]::UtcNow.ToString('o')} } catch {}
-    }
-    [Console]::Error.WriteLine('KROACNET_BACKUP_FAILED '+$category)
+    Save-Result @{status='failed';reason=$_.Exception.Message}
     exit 1
-} finally { if ($lock) { $lock.Dispose() } }
+}

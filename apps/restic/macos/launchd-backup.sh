@@ -17,8 +17,7 @@ main() {
     local lib=/Users/avirut/.local/lib/kroacnet-backup
     local config=/Users/avirut/.config/kroacnet-backup
     local base=/Users/avirut/Documents/Projects/kroacnet/private/backups/restic/stage
-    [[ -d $base && ! -L $base && $(stat -f '%u:%Lp' "$base") == 501:700 ]] || return 77
-    [[ ! -L $base/operation.lock ]] || return 77
+    mkdir -p -m 700 "$base"
     exec 9>"$base/operation.lock"
     /usr/bin/lockf -s -t 0 9 || return $?
     local now last=0 stamp last_day=none due

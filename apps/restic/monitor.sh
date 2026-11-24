@@ -144,11 +144,8 @@ for set in "${BACKUP_SETS[@]}"; do
             condition=failed
             case $stage in
                 lock) detail='Another operation blocked this backup from starting.';;
-                source) detail='A required host path is missing or invalid.';;
-                mount) detail='A backup source is on an unexpected filesystem.';;
-                sqlite) detail='SQLite backup or database integrity verification failed.';;
-                conversation) detail='Conversation history changed or contained invalid records.';;
-                empty) detail='Preparation produced no files to back up.';;
+                postgres) detail='A running PostgreSQL database could not be dumped.';;
+                sqlite) detail='SQLite backup of an external database file failed.';;
                 prepare) detail='Backup stopped while preparing application data.';;
                 upload) detail='Restic could not upload a complete snapshot.';;
                 record) detail='The backup could not save its completion record.';;

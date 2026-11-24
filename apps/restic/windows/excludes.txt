@@ -1,0 +1,57 @@
+C:\$$Recycle.Bin
+C:\Intel
+C:\PerfLogs
+C:\Program Files
+C:\Program Files (x86)
+C:\ProgramData\Microsoft
+C:\ProgramData\Package Cache
+C:\Python314
+C:\Recovery
+C:\System Volume Information
+C:\Users\*\.cache
+C:\Users\*\.codex\.tmp
+C:\Users\*\.codex\cache
+C:\Users\*\.codex\packages
+C:\Users\*\.codex\plugins
+C:\Users\*\.codex\tmp
+C:\Users\*\.dotnet
+C:\Users\*\.local\share\claude
+C:\Users\*\.local\state\kroacnet-pm
+C:\Users\*\.nuget
+C:\Users\*\.paseo\models
+C:\Users\*\.paseo\runtime
+C:\Users\*\AppData\Local\Microsoft
+C:\Users\*\AppData\Local\OpenAI
+C:\Users\*\AppData\Local\Packages
+C:\Users\*\AppData\Local\Programs
+C:\Users\*\AppData\Local\Temp
+C:\Users\*\AppData\Local\npm-cache
+C:\Users\*\AppData\Local\pnpm
+C:\Users\*\AppData\Local\vacuumtube-updater
+C:\Users\*\AppData\Roaming\npm
+C:\Users\*\Applications\TV\BrowserProfiles
+C:\Windows
+C:\Windows.old
+C:\hiberfil.sys
+C:\pagefile.sys
+C:\swapfile.sys
+*.log
+*.log.*
+logs_*.sqlite
+logs_*.sqlite-*
+__pycache__
+.next
+.pnpm-store
+.svelte-kit
+.venv
+Cache
+CacheStorage
+Code Cache
+DawnGraphiteCache
+DawnWebGPUCache
+GPUCache
+GraphiteDawnCache
+GrShaderCache
+OptGuideOnDeviceModel
+ShaderCache
+node_modules

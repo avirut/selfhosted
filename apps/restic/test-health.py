@@ -13,7 +13,7 @@ UTC = datetime.timezone.utc
 SUNDAY = datetime.datetime(2026, 11, 15, 11, 30, tzinfo=UTC)
 SETS = (
     "skepsis/apps", "skepsis/embral", "sophon-media/apps",
-    "sophon-gpu/apps", "sophon/apps", "ambrosia.local/apps", "chrysaora/apps",
+    "sophon-gpu/apps", "sophon/apps", "sophon-agent/apps", "ambrosia.local/apps", "chrysaora/apps",
 )
 
 
