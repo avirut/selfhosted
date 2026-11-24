@@ -194,12 +194,12 @@ print(json.dumps({"status": path.read_text() if path.exists() else "absent"}))
     def test_current_backup_failure_and_repository_access_have_descriptions(self):
         profile = self.state / "apps"
         profile.mkdir()
-        (profile / "result").write_text("failed 2026-11-15T10:00:00Z sqlite\n")
+        (profile / "result").write_text("failed 2026-11-15T10:00:00Z postgres\n")
         self.run_job("monitor", expected=1, LIST_EXIT="11")
         self.run_job("monitor")
         texts = [row["text"] for row in self.alerts()]
         self.assertIn("A repository lock blocked the snapshot listing.", texts[0])
-        self.assertIn("skepsis-apps is failed. SQLite backup", texts[-1])
+        self.assertIn("skepsis-apps is failed. A running PostgreSQL", texts[-1])
 
     def test_week_starts_at_chicago_maintenance_window_after_dst_change(self):
         boundary = datetime.datetime(2026, 3, 8, 10, 30, tzinfo=UTC)

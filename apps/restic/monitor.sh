@@ -145,7 +145,6 @@ for set in "${BACKUP_SETS[@]}"; do
             case $stage in
                 lock) detail='Another operation blocked this backup from starting.';;
                 postgres) detail='A running PostgreSQL database could not be dumped.';;
-                sqlite) detail='SQLite backup of an external database file failed.';;
                 prepare) detail='Backup stopped while preparing application data.';;
                 upload) detail='Restic could not upload a complete snapshot.';;
                 record) detail='The backup could not save its completion record.';;

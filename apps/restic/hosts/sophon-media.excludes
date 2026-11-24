@@ -6,3 +6,6 @@
 /var/lib/pelican/volumes/*/cache
 /var/lib/pelican/volumes/*/libraries
 /var/lib/pelican/volumes/*/versions
+!/mnt/data/media/okearak/library/.versions
+!/mnt/data/media/okearak/state
+/mnt/data/media/okearak/state/diagnostics

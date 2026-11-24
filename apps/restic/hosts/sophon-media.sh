@@ -1,7 +1,6 @@
 BACKUP_HOST=sophon-media
 profile_apps() {
-    ROOTS=(/)
-    SQLITE_FILES=(/mnt/data/media/okearak/state/room.db)
+    ROOTS=(/ /mnt/data/media/okearak/library/.versions /mnt/data/media/okearak/state)
 }
 pelican_command() {
     local token

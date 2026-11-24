@@ -6,7 +6,6 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 ENV_FILE=$1; HOST_CONFIG=$2; PROFILE=$3
 BASE=/var/lib/kroacnet-backup
 SQLITE=sqlite3
-SQLITE_FILES=()
 POSTGRES=.
 failures=()
 export LC_ALL=C
@@ -60,7 +59,6 @@ sqlite_candidates() {
             *) skip+=(-o -name "$pattern");;
         esac
     done < "$EXCLUDES"
-    printf '%s\0' ${SQLITE_FILES[@]+"${SQLITE_FILES[@]}"}
     find "${ROOTS[@]}" -xdev \( "${skip[@]}" \) -prune -o -type f -mtime -3 \
         \( -name '*.db' -o -name '*.db3' -o -name '*.sqlite' -o -name '*.sqlite3' -o -name '*-wal' \) -print0 2>/dev/null || true
 }
@@ -72,9 +70,6 @@ prepare_sqlite() {
         head -c 15 "$file" 2>/dev/null | grep -aq '^SQLite format 3$' || continue
         if sqlite_copy "$file" "$STAGE/sqlite$file"; then
             for suffix in '' -wal -shm -journal; do literal "$file$suffix"; done >> "$STATE/sqlite-excludes"
-        elif [[ " ${SQLITE_FILES[*]-} " == *" $file "* ]]; then
-            note "SQLite copy failed: $file"
-            failures+=("sqlite:$file")
         else
             note "kept live copy: $file"
         fi
