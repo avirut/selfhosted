@@ -17,7 +17,7 @@ work=$(mktemp -d /var/lib/kroacnet-backup/verify.XXXXXX)
 trap 'rm -rf "$work"' EXIT
 stage=catalogue
 "$SCRIPT_DIR/list-snapshots.sh" "$1" --json > "$work/snapshots.json"
-for host in skepsis sophon-media sophon-gpu sophon ambrosia.local chrysaora; do
+for host in skepsis sophon-media sophon-gpu sophon sophon-agent ambrosia.local chrysaora; do
     profiles=(apps)
     if [[ $host == skepsis ]]; then profiles+=(embral); fi
     for profile in "${profiles[@]}"; do
@@ -35,12 +35,13 @@ for host in skepsis sophon-media sophon-gpu sophon ambrosia.local chrysaora; do
             sophon/apps) directories+=("$root/files/var/lib/pve-cluster" "$root/files/home/avirut/.paseo");;
             sophon-media/apps) directories+=("$root/files/home/avirut/.config/okearak/access");;
             sophon-gpu/apps) directories+=("$root/files/home/avirut/.config/sunshine");;
+            sophon-agent/apps) directories+=("$root/files/home/avirut/.hermes");;
             ambrosia.local/apps) directories+=("$root/files/Users/avirut/.codex" "$root/files/Users/avirut/.paseo");;
             chrysaora/apps) directories+=("$root/codex");;
         esac
         stage=inventory
         restic ls --json "$id" "${directories[@]}" > "$work/files.jsonl"
-        jq -rs '[.[] | select(.type == "file" and .size > 0 and .size < 2097152 and (.path | contains("/worktree/") | not))] | ([.[] | select(.path | test("/(state_5\\.sqlite|access\\.db|config\\.db)$"))][0:1] + [.[] | select(.path | test("/\\.paseo/config\\.json$|/sunshine/apps\\.json$|^/payload/manifest\\.json$"))][0:1] + [.[] | select(.path | endswith("/prepared-at"))][0:1]) | .[].path' "$work/files.jsonl" > "$work/selection"
+        jq -rs '[.[] | select(.type == "file" and .size > 0 and .size < 2097152 and (.path | contains("/worktree/") | not))] | ([.[] | select(.path | test("/(state_5\\.sqlite|access\\.db|config\\.db)$"))][0:1] + [.[] | select(.path | test("/\\.paseo/config\\.json$|/sunshine/apps\\.json$|/\\.hermes/config\\.yaml$|^/payload/manifest\\.json$"))][0:1] + [.[] | select(.path | endswith("/prepared-at"))][0:1]) | .[].path' "$work/files.jsonl" > "$work/selection"
         stage=sample
         [[ -s $work/selection ]]
         args=()

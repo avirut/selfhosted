@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 BACKUP_STATE=/var/lib/kroacnet-backup
-BACKUP_SETS=(skepsis/apps skepsis/embral sophon-media/apps sophon-gpu/apps sophon/apps ambrosia.local/apps chrysaora/apps)
+BACKUP_SETS=(skepsis/apps skepsis/embral sophon-media/apps sophon-gpu/apps sophon/apps sophon-agent/apps ambrosia.local/apps chrysaora/apps)
 SNAPSHOT_MAX_AGE=108000
 RESTORE_MAX_AGE=3456000
 MAINTENANCE_MAX_AGE=777600

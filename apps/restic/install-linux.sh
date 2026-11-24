@@ -3,7 +3,7 @@ set -euo pipefail
 [[ $EUID == 0 && $# == 2 ]] || { echo 'Usage: sudo install-linux.sh HOST ENV_FILE' >&2; exit 2; }
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 host=$1; envfile=$2
-case $host in skepsis) time=03:30;; sophon-media) time=03:50;; sophon-gpu) time=04:10;; sophon) time=04:30;; *) exit 2;; esac
+case $host in skepsis) time=03:30;; sophon-media) time=03:50;; sophon-gpu) time=04:10;; sophon) time=04:30;; sophon-agent) time=04:40;; *) exit 2;; esac
 for tool in restic sqlite3 rsync jq shasum timeout flock findmnt setpriv; do command -v "$tool" >/dev/null; done
 install -d -m 700 /etc/kroacnet-backup /var/lib/kroacnet-backup
 install -d -m 755 /opt/kroacnet-backup
