@@ -1,6 +1,6 @@
 services:
   authentik:
-    image: ghcr.io/goauthentik/server:2026.8.6@sha256:da89d8338a3b1889800eb033fd61f8d43f7aa9a1c5a042cb5e03d891b1f0c56c
+    image: ghcr.io/goauthentik/server:2026.8.7@sha256:1675a017c46ba7f4f15333aeafeeb64538c581673bcbcd36af872cdf7de4e7f7
     container_name: authentik
     restart: unless-stopped
     command: server
@@ -21,7 +21,7 @@ services:
       - proxy # port 9000
 
   authentik-worker:
-    image: ghcr.io/goauthentik/server:2026.8.6@sha256:da89d8338a3b1889800eb033fd61f8d43f7aa9a1c5a042cb5e03d891b1f0c56c
+    image: ghcr.io/goauthentik/server:2026.8.7@sha256:1675a017c46ba7f4f15333aeafeeb64538c581673bcbcd36af872cdf7de4e7f7
     container_name: authentik-worker
     user: root
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
       - proxy
 
   authentik-postgresql:
-    image: postgres:17-alpine@sha256:005c5c37db96c1e6652a79ea31f9886402fba81ac95dc2db897739121dd7f8f2
+    image: postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
     container_name: authentik-postgresql
     restart: unless-stopped
     env_file:
