@@ -7,7 +7,9 @@ const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright-core');
 const root = path.resolve(process.argv[2]);
 const config = JSON.parse(await readFile(path.join(root, '_kroacnet/hosts.json'), 'utf8'));
-const ids = config.hosts.map(host => host.offer.serverId);
+const offline = new Set((process.env.PASEO_OFFLINE_HOSTS ?? '').split(',').filter(Boolean));
+assert([...offline].every(name => config.hosts.some(host => host.name === name)));
+const ids = config.hosts.filter(host => !offline.has(host.name)).map(host => host.offer.serverId);
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
   '.json': 'application/json', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const server = createServer(async (request, response) => {
